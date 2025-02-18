@@ -1,60 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from './components/ui/card';
+import { TimerDisplay } from './components/TimerDisplay';
+import { SettingsMenu } from './components/SettingsMenu';
+import { useTimer } from './hooks/useTimer';
 
 const CountdownTimer = () => {
   const [darkMode, setDarkMode] = useState(false);
-  const [time, setTime] = useState({ hours: 1, minutes: 30, seconds: 0 });
-  const [isPaused, setIsPaused] = useState(true);
   const [fontSize, setFontSize] = useState(10);
   const [marginBottom, setMarginBottom] = useState(0);
   const [links, setLinks] = useState(['']);
   const [showForm, setShowForm] = useState(true);
   const [currentSheet, setCurrentSheet] = useState(0);
   const [animationPauseTime, setAnimationPauseTime] = useState(15);
-  const [showSettings, setShowSettings] = useState(false);
 
-  const startTimeRef = useRef<Date | null>(null);
-  const pauseTimeRef = useRef<number>(0);
-  const pauseMomentRef = useRef<Date | null>(null);
-  const timerRef = useRef<number | null>(null);
+  const { time, isPaused, addSecondsToTimer, handleTimerToggle } = useTimer({
+    hours: 1,
+    minutes: 30,
+    seconds: 0
+  });
 
-  // Add helper function
-  const formatTimeUnit = (unit: number) => unit.toString().padStart(2, '0');
-
-  // Timer logic
-  useEffect(() => {
-    if (!isPaused && !showForm) {
-      const clockTick = () => {
-        const curTime = new Date();
-        // Ensure startTimeRef.current is not null (it is set below)
-        const elapsed = startTimeRef.current ? curTime.getTime() - startTimeRef.current.getTime() : 0;
-        let mils = -elapsed + pauseTimeRef.current + 5400 * 1000;
-        mils = Math.max(mils, 0);
-
-        const totalSeconds = Math.floor(mils / 1000);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-
-        setTime({ hours, minutes, seconds });
-
-        if (totalSeconds > 0) {
-          timerRef.current = requestAnimationFrame(clockTick);
-        }
-      };
-
-      if (!startTimeRef.current) {
-        startTimeRef.current = new Date();
-      }
-      timerRef.current = requestAnimationFrame(clockTick);
-    }
-
-    return () => {
-      if (timerRef.current) {
-        cancelAnimationFrame(timerRef.current);
-      }
-    };
-  }, [isPaused, showForm]);
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.altKey) {
@@ -90,39 +54,6 @@ const CountdownTimer = () => {
     };
   }, [time]);
 
-  const addSecondsToTimer = (seconds: number) => {
-    const totalCurrentSeconds = time.hours * 3600 + time.minutes * 60 + time.seconds;
-    const newTotalSeconds = Math.max(0, totalCurrentSeconds + seconds);
-
-    setTime({
-      hours: Math.floor(newTotalSeconds / 3600),
-      minutes: Math.floor((newTotalSeconds % 3600) / 60),
-      seconds: newTotalSeconds % 60
-    });
-  };
-
-  const handleTimerClick = () => {
-    if (showForm) {
-      pauseTimeRef.current += pauseMomentRef.current 
-        ? (new Date().getTime() - pauseMomentRef.current.getTime()) 
-        : 0;
-      setIsPaused(false);
-      startTimeRef.current = new Date();
-    } else {
-      setIsPaused(prev => {
-        if (prev) {
-          // Fix the Date arithmetic by using getTime()
-          pauseTimeRef.current += pauseMomentRef.current 
-            ? (new Date().getTime() - pauseMomentRef.current.getTime())
-            : 0;
-        } else {
-          pauseMomentRef.current = new Date();
-        }
-        return !prev;
-      });
-    }
-  };
-
   const addLink = () => {
     setLinks(prev => [...prev, '']);
   };
@@ -130,8 +61,7 @@ const CountdownTimer = () => {
   const updateLink = (index: number, value: string) => {
     setLinks(prev => prev.map((link, i) => i === index ? value : link));
   };
-  // Using the properly typed updateLink; the duplicate has been removed.
-  // Auto-switch sheets
+
   useEffect(() => {
     if (!showForm && links.length > 1) {
       const interval = setInterval(() => {
@@ -143,104 +73,23 @@ const CountdownTimer = () => {
   }, [showForm, links.length, animationPauseTime]);
 
   return (
-    <div
-      className={`min-h-screen w-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}
-      style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
-    >
-      {/* Settings Menu */}
-      <div
-        className="fixed top-0 right-0 w-16 h-16 z-50"
-        onMouseEnter={() => setShowSettings(true)}
-      >
-        {showSettings && (
-          <div
-            className="fixed top-0 right-0 w-64 bg-gray-800 text-white p-4 rounded-bl-lg shadow-lg"
-            onMouseLeave={() => setShowSettings(false)}
-            style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
-          >
-            <div className="space-y-2">
-              <button
-                onClick={() => setDarkMode(false)}
-                className="block w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                Light mode
-              </button>
-              <button
-                onClick={() => setDarkMode(true)}
-                className="block w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                Dark mode
-              </button>
-              <button
-                onClick={() => addSecondsToTimer(-3600)}
-                className="block w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                -1 hour
-              </button>
-              <button
-                onClick={() => addSecondsToTimer(-60)}
-                className="block w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                -1 min
-              </button>
-              <button
-                onClick={() => addSecondsToTimer(-1)}
-                className="block w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                -1 sec
-              </button>
-              <button
-                onClick={() => addSecondsToTimer(1)}
-                className="block w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                +1 sec
-              </button>
-              <button
-                onClick={() => addSecondsToTimer(60)}
-                className="block w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                +1 min
-              </button>
-              <button
-                onClick={() => addSecondsToTimer(3600)}
-                className="block w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                +1 hour
-              </button>
-              <button
-                onClick={() => setFontSize(prev => Math.max(1, prev - 1))}
-                className="block w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                Decrease size
-              </button>
-              <button
-                onClick={() => setFontSize(prev => prev + 1)}
-                className="block w-full text-left px-2 py-1 hover:bg-gray-700 rounded"
-              >
-                Increase size
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+    <div className={`min-h-screen w-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+      <SettingsMenu
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        addSecondsToTimer={addSecondsToTimer}
+        setFontSize={setFontSize}
+      />
 
       <div className="w-screen">
-        {/* Timer Display */}
-        <div
-          className={`text-center py-8 cursor-pointer ${isPaused ? 'opacity-50' : ''}`}
-          style={{
-            marginBottom: `${marginBottom}px`,
-            fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-            fontWeight: 'bold'
-          }}
-          onClick={handleTimerClick}
-        >
-          <div style={{ fontSize: `${fontSize}rem` }}>
-            {`${time.hours}:${formatTimeUnit(time.minutes)}:${formatTimeUnit(time.seconds)}`}
-          </div>
-        </div>
+        <TimerDisplay
+          time={time}
+          isPaused={isPaused}
+          fontSize={fontSize}
+          marginBottom={marginBottom}
+          onClick={handleTimerToggle}
+        />
 
-        {/* Setup Form */}
         {showForm && (
           <Card className="max-w-2xl mx-auto">
             <CardContent
@@ -332,7 +181,6 @@ const CountdownTimer = () => {
           </Card>
         )}
 
-        {/* Spreadsheet iframes */}
         {!showForm && links[0] && (
           <div className="fixed inset-0 w-screen h-screen">
             {links.map((link, index) => (
@@ -355,6 +203,7 @@ const CountdownTimer = () => {
     </div>
   );
 };
+
 export default CountdownTimer;
 
 export function Home() {
