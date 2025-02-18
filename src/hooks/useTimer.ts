@@ -15,15 +15,34 @@ export const useTimer = (initialTime: TimerState) => {
   const totalPauseTimeRef = useRef(0);
   const timerRef = useRef<number | null>(null);
 
-  const formatTimeState = (totalSeconds: number): TimerState => ({
-    hours: Math.floor(totalSeconds / 3600),
-    minutes: Math.floor((totalSeconds % 3600) / 60),
-    seconds: totalSeconds % 60
-  });
+
+  const formatTimeState = (totalSeconds: number): TimerState => {
+    if (totalSeconds <= 0) {
+      return { hours: 0, minutes: 0, seconds: 0 };
+    }
+    return {
+      hours: Math.floor(totalSeconds / 3600),
+      minutes: Math.floor((totalSeconds % 3600) / 60),
+      seconds: totalSeconds % 60
+    };
+  };
+
+  const calculateRemainingSeconds = (): number => {
+    if (!startTimeRef.current) return initialSeconds.current;
+
+    const currentTime = Date.now();
+    const elapsedTime = Math.floor(
+      (currentTime - startTimeRef.current - totalPauseTimeRef.current) / 1000
+    );
+    return initialSeconds.current - elapsedTime;
+  };
 
   const addSecondsToTimer = (seconds: number) => {
-    initialSeconds.current = Math.max(0, initialSeconds.current + seconds);
-    if (isPaused) {
+    initialSeconds.current = initialSeconds.current + seconds;
+    
+    if (!isPaused && startTimeRef.current) {
+      setTime(formatTimeState(calculateRemainingSeconds()));
+    } else {
       setTime(formatTimeState(initialSeconds.current));
     }
   };
@@ -36,12 +55,7 @@ export const useTimer = (initialTime: TimerState) => {
       }
 
       const tick = () => {
-        const currentTime = Date.now();
-        const elapsedTime = Math.floor(
-          (currentTime - startTimeRef.current! - totalPauseTimeRef.current) / 1000
-        );
-        const remainingSeconds = Math.max(0, initialSeconds.current - elapsedTime);
-        
+        const remainingSeconds = calculateRemainingSeconds();
         setTime(formatTimeState(remainingSeconds));
 
         if (remainingSeconds > 0) {
