@@ -4,47 +4,52 @@ import { TimerState } from '../types/timer';
 export const useTimer = (initialTime: TimerState) => {
   const [time, setTime] = useState<TimerState>(initialTime);
   const [isPaused, setIsPaused] = useState(true);
+
+  // Convert initial time to total seconds
+  const initialSeconds = useRef(
+    initialTime.hours * 3600 + initialTime.minutes * 60 + initialTime.seconds
+  );
   
-  const startTimeRef = useRef<Date | null>(null);
-  const pauseTimeRef = useRef<number>(0);
-  const pauseMomentRef = useRef<Date | null>(null);
+  const startTimeRef = useRef<number | null>(null);
+  const pauseStartRef = useRef<number | null>(null);
+  const totalPauseTimeRef = useRef(0);
   const timerRef = useRef<number | null>(null);
 
-  const addSecondsToTimer = (seconds: number) => {
-    const totalCurrentSeconds = time.hours * 3600 + time.minutes * 60 + time.seconds;
-    const newTotalSeconds = Math.max(0, totalCurrentSeconds + seconds);
+  const formatTimeState = (totalSeconds: number): TimerState => ({
+    hours: Math.floor(totalSeconds / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60
+  });
 
-    setTime({
-      hours: Math.floor(newTotalSeconds / 3600),
-      minutes: Math.floor((newTotalSeconds % 3600) / 60),
-      seconds: newTotalSeconds % 60
-    });
+  const addSecondsToTimer = (seconds: number) => {
+    initialSeconds.current = Math.max(0, initialSeconds.current + seconds);
+    if (isPaused) {
+      setTime(formatTimeState(initialSeconds.current));
+    }
   };
 
   useEffect(() => {
     if (!isPaused) {
-      const clockTick = () => {
-        const curTime = new Date();
-        const elapsed = startTimeRef.current ? curTime.getTime() - startTimeRef.current.getTime() : 0;
-        let mils = -elapsed + pauseTimeRef.current + 5400 * 1000;
-        mils = Math.max(mils, 0);
+      const now = Date.now();
+      if (!startTimeRef.current) {
+        startTimeRef.current = now;
+      }
 
-        const totalSeconds = Math.floor(mils / 1000);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
+      const tick = () => {
+        const currentTime = Date.now();
+        const elapsedTime = Math.floor(
+          (currentTime - startTimeRef.current! - totalPauseTimeRef.current) / 1000
+        );
+        const remainingSeconds = Math.max(0, initialSeconds.current - elapsedTime);
+        
+        setTime(formatTimeState(remainingSeconds));
 
-        setTime({ hours, minutes, seconds });
-
-        if (totalSeconds > 0) {
-          timerRef.current = requestAnimationFrame(clockTick);
+        if (remainingSeconds > 0) {
+          timerRef.current = requestAnimationFrame(tick);
         }
       };
 
-      if (!startTimeRef.current) {
-        startTimeRef.current = new Date();
-      }
-      timerRef.current = requestAnimationFrame(clockTick);
+      timerRef.current = requestAnimationFrame(tick);
     }
 
     return () => {
@@ -55,14 +60,16 @@ export const useTimer = (initialTime: TimerState) => {
   }, [isPaused]);
 
   const handleTimerToggle = () => {
+    const now = Date.now();
+    
     setIsPaused(prev => {
-      if (prev) {
-        pauseTimeRef.current += pauseMomentRef.current 
-          ? (new Date().getTime() - pauseMomentRef.current.getTime())
-          : 0;
-        startTimeRef.current = new Date();
-      } else {
-        pauseMomentRef.current = new Date();
+      if (prev) { // Resuming
+        if (pauseStartRef.current) {
+          totalPauseTimeRef.current += now - pauseStartRef.current;
+        }
+        pauseStartRef.current = null;
+      } else { // Pausing
+        pauseStartRef.current = now;
       }
       return !prev;
     });
