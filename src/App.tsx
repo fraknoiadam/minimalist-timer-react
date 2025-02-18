@@ -144,7 +144,7 @@ const CountdownTimer = () => {
 
   return (
     <div
-      className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}
+      className={`min-h-screen w-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}
       style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
     >
       {/* Settings Menu */}
@@ -224,7 +224,7 @@ const CountdownTimer = () => {
         )}
       </div>
 
-      <div className="container mx-auto px-4">
+      <div className="w-screen">
         {/* Timer Display */}
         <div
           className={`text-center py-8 cursor-pointer ${isPaused ? 'opacity-50' : ''}`}
@@ -334,12 +334,13 @@ const CountdownTimer = () => {
 
         {/* Spreadsheet iframes */}
         {!showForm && links[0] && (
-          <div className="relative w-full h-screen">
+          <div className="fixed inset-0 w-screen h-screen">
             {links.map((link, index) => (
               <div
                 key={index}
-                className={`absolute inset-0 transition-opacity duration-500 ${index === currentSheet ? 'opacity-100' : 'opacity-0'
-                  }`}
+                className={`absolute inset-0 transition-opacity duration-500 ${
+                  index === currentSheet ? 'opacity-100' : 'opacity-0'
+                }`}
               >
                 <iframe
                   src={link}
