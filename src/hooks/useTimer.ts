@@ -13,8 +13,7 @@ export const useTimer = (initialTime: TimerState) => {
   const startTimeRef = useRef<number | null>(null);
   const pauseStartRef = useRef<number | null>(null);
   const totalPauseTimeRef = useRef(0);
-  const timerRef = useRef<number | null>(null);
-
+  const intervalRef = useRef<number | null>(null);  // Changed from timerRef
 
   const formatTimeState = (totalSeconds: number): TimerState => {
     if (totalSeconds <= 0) {
@@ -54,19 +53,18 @@ export const useTimer = (initialTime: TimerState) => {
         startTimeRef.current = now;
       }
 
-      const tick = () => {
-        const remainingSeconds = calculateRemainingSeconds();
-        setTime(formatTimeState(remainingSeconds));
-        // Always continue the animation frame
-        timerRef.current = requestAnimationFrame(tick);
-      };
-
-      timerRef.current = requestAnimationFrame(tick);
+      // Update immediately
+      setTime(formatTimeState(calculateRemainingSeconds()));
+      
+      // Then update every second
+      intervalRef.current = window.setInterval(() => {
+        setTime(formatTimeState(calculateRemainingSeconds()));
+      }, 1000);
     }
 
     return () => {
-      if (timerRef.current) {
-        cancelAnimationFrame(timerRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
     };
   }, [isPaused]);
