@@ -57,10 +57,8 @@ export const useTimer = (initialTime: TimerState) => {
       const tick = () => {
         const remainingSeconds = calculateRemainingSeconds();
         setTime(formatTimeState(remainingSeconds));
-
-        if (remainingSeconds > 0) {
-          timerRef.current = requestAnimationFrame(tick);
-        }
+        // Always continue the animation frame
+        timerRef.current = requestAnimationFrame(tick);
       };
 
       timerRef.current = requestAnimationFrame(tick);
