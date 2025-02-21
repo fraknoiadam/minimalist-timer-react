@@ -71,7 +71,7 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
             onClick={handleStart}
             className="w-full p-2 bg-green-500 text-white rounded hover:bg-green-600"
           >
-            Start Timer
+            Load sites
           </button>
         </div>
 

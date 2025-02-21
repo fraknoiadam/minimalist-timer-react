@@ -57,7 +57,9 @@ const CountdownTimer = () => {
   };
 
   return (
-    <div className={`min-h-screen w-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+    <div className={`min-h-screen w-screen ${
+      darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`
+    }>
       <SettingsMenu
         darkMode={darkMode}
         setDarkMode={setDarkMode}
@@ -65,22 +67,20 @@ const CountdownTimer = () => {
         setFontSize={setFontSize}
       />
 
-      <div className="">
-        <TimerDisplay
-          time={time}
-          isPaused={paused}
-          fontSize={fontSize}
-          marginBottom={marginBottom}
-          onClick={toggleTimer}
-        />
+      <TimerDisplay
+        time={time}
+        isPaused={paused}
+        fontSize={fontSize}
+        marginBottom={marginBottom}
+        onClick={toggleTimer}
+      />
 
-        {showForm && <TimerSetupForm onStart={handleFormSubmit} />}
-        
-        {!showForm && <ContentEmbed 
-          links={links} 
-          animationPauseTime={animationPauseTime} 
-        />}
-      </div>
+      {showForm && <TimerSetupForm onStart={handleFormSubmit} />}
+
+      {!showForm && <ContentEmbed 
+        links={links} 
+        animationPauseTime={animationPauseTime} 
+      />}
     </div>
   );
 };
