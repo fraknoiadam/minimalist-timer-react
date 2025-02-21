@@ -13,11 +13,7 @@ const CountdownTimer = () => {
   const [currentSheet, setCurrentSheet] = useState(0);
   const [animationPauseTime, setAnimationPauseTime] = useState(15);
 
-  const { time, isPaused, addSecondsToTimer, handleTimerToggle } = useTimer({
-    hours: 1,
-    minutes: 30,
-    seconds: 0
-  });
+  const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(1 * 60);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -84,10 +80,10 @@ const CountdownTimer = () => {
       <div className="w-screen">
         <TimerDisplay
           time={time}
-          isPaused={isPaused}
+          isPaused={paused}
           fontSize={fontSize}
           marginBottom={marginBottom}
-          onClick={handleTimerToggle}
+          onClick={toggleTimer}
         />
 
         {showForm && (
