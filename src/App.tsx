@@ -75,7 +75,7 @@ const CountdownTimer = () => {
         setFontSize={setFontSize}
       />
 
-      <div className="w-screen">
+      <div className="">
         <TimerDisplay
           time={time}
           isPaused={paused}
@@ -87,21 +87,24 @@ const CountdownTimer = () => {
         {showForm && <TimerSetupForm onStart={handleFormSubmit} />}
 
         {!showForm && links[0] && (
-          <div className="fixed inset-0 w-screen h-screen">
-            {links.map((link, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 transition-opacity duration-500 ${
-                  index === currentSheet ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                <iframe
-                  src={link}
-                  className="w-full h-full border-0"
-                  title={`Spreadsheet ${index + 1}`}
-                />
-              </div>
-            ))}
+          <div className="flex-1">
+        {links.map((link, index) => (
+            <div
+            key={index}
+            className={`w-full h-full transition-opacity duration-500 ${
+              index === currentSheet ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ 
+              height: `calc(100vh - 100px)`
+            }}
+            >
+            <iframe
+              src={link}
+              className="w-full h-full border-0"
+              title={`Spreadsheet ${index + 1}`}
+            />
+            </div>
+        ))}
           </div>
         )}
       </div>
