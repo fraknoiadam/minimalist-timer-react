@@ -13,7 +13,7 @@ const CountdownTimer = () => {
   const [currentSheet, setCurrentSheet] = useState(0);
   const [animationPauseTime, setAnimationPauseTime] = useState(15);
 
-  const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(1 * 60);
+  const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(60 * 60 * 1000);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
