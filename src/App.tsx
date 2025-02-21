@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { TimerDisplay } from './components/TimerDisplay';
 import { SettingsMenu } from './components/SettingsMenu';
-import { useTimer } from './hooks/useTimer';
 import { TimerSetupForm } from './components/TimerSetupForm';
+import { ContentEmbed } from './components/ContentEmbed';
+import { useTimer } from './hooks/useTimer';
 
 const CountdownTimer = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState(10);
   const [marginBottom, setMarginBottom] = useState(0);
   const [showForm, setShowForm] = useState(true);
-  const [currentSheet, setCurrentSheet] = useState(0);
   const [links, setLinks] = useState<string[]>([]);
   const [animationPauseTime, setAnimationPauseTime] = useState(15);
 
@@ -56,16 +56,6 @@ const CountdownTimer = () => {
     setShowForm(false);
   };
 
-  useEffect(() => {
-    if (!showForm && links.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentSheet(prev => (prev + 1) % links.length);
-      }, animationPauseTime * 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [showForm, links.length, animationPauseTime]);
-
   return (
     <div className={`min-h-screen w-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
       <SettingsMenu
@@ -85,28 +75,11 @@ const CountdownTimer = () => {
         />
 
         {showForm && <TimerSetupForm onStart={handleFormSubmit} />}
-
-        {!showForm && links[0] && (
-          <div className="flex-1">
-        {links.map((link, index) => (
-            <div
-            key={index}
-            className={`w-full h-full transition-opacity duration-500 ${
-              index === currentSheet ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{ 
-              height: `calc(100vh - 100px)`
-            }}
-            >
-            <iframe
-              src={link}
-              className="w-full h-full border-0"
-              title={`Spreadsheet ${index + 1}`}
-            />
-            </div>
-        ))}
-          </div>
-        )}
+        
+        {!showForm && <ContentEmbed 
+          links={links} 
+          animationPauseTime={animationPauseTime} 
+        />}
       </div>
     </div>
   );
