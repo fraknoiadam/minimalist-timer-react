@@ -1,0 +1,114 @@
+import { useState } from 'react';
+import { Card, CardContent } from './ui/card';
+
+interface TimerSetupFormProps {
+  onStart: (links: string[], animationPauseTime: number) => void;
+}
+
+export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
+  const [links, setLinks] = useState(['']);
+  const [animationPauseTime, setAnimationPauseTime] = useState(15);
+
+  const addLink = () => {
+    setLinks(prev => [...prev, '']);
+  };
+
+  const updateLink = (index: number, value: string) => {
+    setLinks(prev => prev.map((link, i) => i === index ? value : link));
+  };
+
+  const handleStart = () => {
+    onStart(links, animationPauseTime);
+  };
+
+  return (
+    <Card className="max-w-2xl mx-auto">
+      <CardContent
+        className="p-6"
+        style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
+      >
+        <h3 className="text-xl font-bold mb-4">How to use?</h3>
+        <ul className="list-disc pl-6 mb-4">
+          <li>Please use fullscreen mode (F11)</li>
+          <li>Make spreadsheets fullscreen: View menu (top left) - Fullscreen</li>
+          <li>After starting the timer, move cursor to the edge of the screen</li>
+        </ul>
+
+        <div className="space-y-4">
+          {links.map((link, index) => (
+            <div key={index} className="flex gap-2">
+              <input
+                type="text"
+                className="flex-1 p-2 border rounded text-black"
+                value={link}
+                onChange={(e) => updateLink(index, e.target.value)}
+                placeholder="Spreadsheet URL"
+              />
+              {index === links.length - 1 && (
+                <button
+                  onClick={addLink}
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  +
+                </button>
+              )}
+            </div>
+          ))}
+
+          {links.length > 1 && (
+            <div>
+              <label className="block mb-2">Animation pause time (seconds):</label>
+              <input
+                type="number"
+                className="p-2 border rounded text-black"
+                value={animationPauseTime}
+                onChange={(e) => setAnimationPauseTime(Number(e.target.value))}
+              />
+            </div>
+          )}
+
+          <button
+            onClick={handleStart}
+            className="w-full p-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            Start Timer
+          </button>
+        </div>
+
+        <div className="mt-8">
+          <h3 className="text-xl font-bold mb-4">Shortcuts</h3>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="border p-2 text-left">Shortcut</th>
+                <th className="border p-2 text-left">Function</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border p-2">alt+q/Q</td>
+                <td className="border p-2">Toggle dark mode</td>
+              </tr>
+              <tr>
+                <td className="border p-2">alt+h/H</td>
+                <td className="border p-2">Decrease/increase by 1 hour</td>
+              </tr>
+              <tr>
+                <td className="border p-2">alt+m/M</td>
+                <td className="border p-2">Decrease/increase by 1 minute</td>
+              </tr>
+              <tr>
+                <td className="border p-2">alt+s/S</td>
+                <td className="border p-2">Decrease/increase by 1 second</td>
+              </tr>
+              <tr>
+                <td className="border p-2">alt+b/B</td>
+                <td className="border p-2">Decrease/increase timer size</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
