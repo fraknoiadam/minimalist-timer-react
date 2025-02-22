@@ -17,27 +17,21 @@ const secondsToTimerState = (totalMs: number): TimerState => {
 export const useTimer = (initialTotalMs: number) => {
   const [time, setTime] = useState<TimerState>(secondsToTimerState(initialTotalMs));
   const [paused, setPaused] = useState(true);
-
   const [totalMs, setTotalMs] = useState(initialTotalMs);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [pauseStart, setPauseStart] = useState<Date>(new Date());
   const [totalPauseMs, setTotalPauseMs] = useState(0);
-  const intervalRef = useRef<number | null>(null);  // Changed from timerRef
-
+  const intervalRef = useRef<number | null>(null);
 
   const calculateRemainingMs = (): number => {
     if (startTime === null) {
       return totalMs;
     }
     if (paused) {
-      console.log(
-        totalMs - (pauseStart.getTime() - startTime.getTime() - totalPauseMs)
-      );
       return totalMs - (pauseStart.getTime() - startTime.getTime() - totalPauseMs)
     }
     const currentTime = new Date;
     const elapsedTime = (currentTime.getTime() - startTime.getTime() - totalPauseMs);
-    console.log(totalMs - elapsedTime);
     return totalMs - elapsedTime;
   };
 
@@ -46,10 +40,24 @@ export const useTimer = (initialTotalMs: number) => {
   }
 
   useEffect(() => {
-    setTime(secondsToTimerState(calculateRemainingMs()));
-  },
-    [totalMs, startTime, totalPauseMs, pauseStart]);
+    const updateTime = () => {
+      setTime(secondsToTimerState(calculateRemainingMs()));
+    };
 
+    // Update immediately
+    updateTime();
+
+    // If not paused, set up interval
+    if (!paused) {
+      intervalRef.current = window.setInterval(updateTime, 20);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [paused, totalMs, startTime, totalPauseMs, pauseStart]);
 
   const toggleTimer = () => {
     const now = new Date;
@@ -68,21 +76,6 @@ export const useTimer = (initialTotalMs: number) => {
       return !prevPaused;
     });
   };
-
-  useEffect(() => {
-    if (!paused) {
-      intervalRef.current = window.setInterval(() => {
-        setTime(secondsToTimerState(calculateRemainingMs()));
-      }, 20);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [paused]);
-
 
   return { time, paused, addSecondsToTimer, toggleTimer };
 };
