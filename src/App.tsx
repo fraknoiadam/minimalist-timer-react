@@ -28,6 +28,17 @@ const CountdownTimer = () => {
     setLinkSwitchDurationSec(linkSwitchDurationSec);
     setShowForm(false);
     setEmbedFadeOutSec(embedFadeOutSec);
+    
+    // Request fullscreen on form submission
+    try {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) { // Safari
+        document.documentElement.webkitRequestFullscreen();
+      }
+    } catch (error) {
+      console.warn('Failed to enter fullscreen mode:', error);
+    }
   };
 
   useEffect(() => {
