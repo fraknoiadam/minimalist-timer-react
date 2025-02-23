@@ -20,7 +20,7 @@ const CountdownTimer = () => {
   const [timerHeight, setTimerHeight] = useState(0);
   const [embedOverflow, setEmbedOverflow] = useState(true);
 
-  const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(612 * 1000);
+  const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(90*60*1000);
   const remainingSeconds = time.seconds+time.minutes*60+time.hours*3600;
 
   const processSetupFormSubmission = (newLinks: string[], linkSwitchDurationSec: number, embedFadeOutSec: number) => {
