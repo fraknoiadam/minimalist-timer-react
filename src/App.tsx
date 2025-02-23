@@ -4,6 +4,9 @@ import { SettingsMenu } from './components/SettingsMenu';
 import { TimerSetupForm } from './components/TimerSetupForm';
 import { ContentEmbed } from './components/ContentEmbed';
 import { useTimer } from './hooks/useTimer';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { lightTheme, darkTheme } from './theme';
 
 const CountdownTimer = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -57,31 +60,32 @@ const CountdownTimer = () => {
   };
 
   return (
-    <div className={`min-h-screen w-screen ${
-      darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`
-    }>
-      <SettingsMenu
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        addSecondsToTimer={addSecondsToTimer}
-        setFontSize={setFontSize}
-      />
+    <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
+      <CssBaseline />
+      <div className="min-h-screen w-screen">
+        <SettingsMenu
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+          addSecondsToTimer={addSecondsToTimer}
+          setFontSize={setFontSize}
+        />
 
-      <TimerDisplay
-        time={time}
-        isPaused={paused}
-        fontSize={fontSize}
-        marginBottom={marginBottom}
-        onClick={toggleTimer}
-      />
+        <TimerDisplay
+          time={time}
+          isPaused={paused}
+          fontSize={fontSize}
+          marginBottom={marginBottom}
+          onClick={toggleTimer}
+        />
 
-      {showForm && <TimerSetupForm onStart={handleFormSubmit} />}
+        {showForm && <TimerSetupForm onStart={handleFormSubmit} />}
 
-      {!showForm && <ContentEmbed 
-        links={links} 
-        animationPauseTime={animationPauseTime} 
-      />}
-    </div>
+        {!showForm && <ContentEmbed 
+          links={links} 
+          animationPauseTime={animationPauseTime} 
+        />}
+      </div>
+    </ThemeProvider>
   );
 };
 

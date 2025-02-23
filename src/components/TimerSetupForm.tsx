@@ -86,7 +86,7 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
 
         <div className="mt-8">
           <h3 className="text-xl font-bold mb-4">Shortcuts</h3>
-          <table className="w-full border-collapse">
+          <table>
             <thead>
               <tr>
                 <th className="border p-2 text-left">Shortcut</th>
