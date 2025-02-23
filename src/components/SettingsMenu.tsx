@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import Settings from '@mui/icons-material/Settings';
 
 interface SettingsMenuProps {
   darkMode: boolean;
@@ -13,19 +15,89 @@ export const SettingsMenu = ({
   addSecondsToTimer,
   setFontSize
 }: SettingsMenuProps) => {
-  const [showSettings, setShowSettings] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <div
-      className="fixed top-0 right-0 w-16 h-16 z-50"
-      onMouseEnter={() => setShowSettings(true)}
-      onMouseLeave={() => setShowSettings(false)}
-    >
-      {showSettings && (
-        <div className="fixed top-0 right-0 w-64 bg-gray-800 text-white p-4 rounded-bl-lg shadow-lg">
-          {/* ... existing settings menu content ... */}
+    <>
+      <div
+        className="fixed top-0 left-0 w-20 h-20 z-50"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div
+          className={`absolute top-0 left-0 p-4 transition-transform duration-300 ease-in-out ${
+            isHovered ? 'translate-y-0' : '-translate-y-full'
+          }`}
+        >
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            variant="contained"
+            color="primary"
+          >
+            <Settings className="w-6 h-6" />
+          </Button>
         </div>
-      )}
-    </div>
+      </div>
+
+      <Dialog 
+        open={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Settings</DialogTitle>
+        <DialogContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span>Dark Mode</span>
+            <Button 
+              variant="outlined"
+              onClick={() => setDarkMode(!darkMode)}
+            >
+              {darkMode ? 'Disable' : 'Enable'}
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span>Font Size</span>
+            <div className="flex gap-2">
+              <Button
+                variant="outlined"
+                onClick={() => setFontSize(prev => prev - 1)}
+              >
+                -
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setFontSize(prev => prev + 1)}
+              >
+                +
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span>Adjust Timer</span>
+            <div className="flex gap-2">
+              <Button
+                variant="outlined"
+                onClick={() => addSecondsToTimer(-60)}
+              >
+                -1m
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => addSecondsToTimer(60)}
+              >
+                +1m
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsModalOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Card, CardContent } from './ui/card';
+import { Box, Button, TextField } from '@mui/material';
 
 interface TimerSetupFormProps {
   onStart: (links: string[], animationPauseTime: number) => void;
@@ -36,43 +37,51 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
 
         <div className="space-y-4">
           {links.map((link, index) => (
-            <div key={index} className="flex gap-2">
-              <input
-                type="text"
-                className="flex-1 p-2 border rounded text-black"
-                value={link}
-                onChange={(e) => updateLink(index, e.target.value)}
-                placeholder="Spreadsheet URL"
+            <Box key={index} sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+              fullWidth
+              size="small"
+              value={link}
+              onChange={(e) => updateLink(index, e.target.value)}
+              placeholder="Spreadsheet URL"
+              sx={{ flex: 1 }}
               />
               {index === links.length - 1 && (
-                <button
-                  onClick={addLink}
-                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  +
-                </button>
+              <Button
+                variant="contained"
+                onClick={addLink}
+                sx={{ minWidth: '40px', px: 1 }}
+              >
+                +
+              </Button>
               )}
-            </div>
+            </Box>
           ))}
 
           {links.length > 1 && (
-            <div>
-              <label className="block mb-2">Animation pause time (seconds):</label>
-              <input
-                type="number"
-                className="p-2 border rounded text-black"
-                value={animationPauseTime}
-                onChange={(e) => setAnimationPauseTime(Number(e.target.value))}
+            <Box sx={{ my: 2 }}>
+              <TextField
+              fullWidth
+              size="small"
+              type="number"
+              label="Animation pause time (seconds)"
+              value={animationPauseTime}
+              onChange={(e) => setAnimationPauseTime(Math.max(1, Number(e.target.value)))}
               />
-            </div>
+            </Box>
+
           )}
 
-          <button
+            <Button
             onClick={handleStart}
-            className="w-full p-2 bg-green-500 text-white rounded hover:bg-green-600"
-          >
+            variant="contained"
+            color="success"
+            fullWidth
+            sx={{ p: 2 }}
+            >
             Load sites
-          </button>
+            </Button>
+
         </div>
 
         <div className="mt-8">
