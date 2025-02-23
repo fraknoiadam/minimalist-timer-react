@@ -36,9 +36,9 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
       >
         <h3 className="text-xl font-bold mb-4">How to use?</h3>
         <ul className="list-disc pl-6 mb-4">
-          <li>Please use fullscreen mode (F11)</li>
-          <li>Make spreadsheets fullscreen: View menu (top left) - Fullscreen</li>
-          <li>After starting the timer, move cursor to the edge of the screen</li>
+            <li>Set up URLs to be displayed below the timer.</li>
+            <li>There is a settings button in the top left corner.</li>
+            <li>You can start the timer by clicking on it.</li>
         </ul>
 
         <div className="space-y-4">
