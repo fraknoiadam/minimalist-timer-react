@@ -34,15 +34,16 @@ export const SettingsMenu = ({
       >
         <div
           className={`absolute top-0 left-0 p-4 transition-transform duration-300 ease-in-out ${
-            isSetupMode || isHovered ? 'translate-y-0' : '-translate-y-full'
+        isSetupMode || isHovered ? 'translate-y-0' : '-translate-y-full'
           }`}
+          style={{ transitionDelay: isHovered ? '0ms' : '400ms' }}
         >
           <Button
-            onClick={() => setIsModalOpen(true)}
-            variant="contained"
-            color="primary"
+        onClick={() => setIsModalOpen(true)}
+        variant="contained"
+        color="primary"
           >
-            <Settings className="w-6 h-6" />
+        <Settings className="w-6 h-6" />
           </Button>
         </div>
       </div>
