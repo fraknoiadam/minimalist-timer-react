@@ -3,12 +3,18 @@ import { Card, CardContent } from './ui/card';
 import { Box, Button, TextField } from '@mui/material';
 
 interface TimerSetupFormProps {
-  onStart: (links: string[], animationPauseTime: number) => void;
+  onStart: (
+    links: string[],
+    animationPauseTime: number,
+    embedFadeOutSec: number,
+  ) => void;
 }
 
 export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
   const [links, setLinks] = useState(['']);
-  const [animationPauseTime, setAnimationPauseTime] = useState(15);
+  const [linkSwitchDurationSec, setLinkSwitchDurationSec] = useState(15);
+  const [embedFadeOutMin, setEmbedFadeOutMin] = useState(10);
+
 
   const addLink = () => {
     setLinks(prev => [...prev, '']);
@@ -19,7 +25,7 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
   };
 
   const handleStart = () => {
-    onStart(links, animationPauseTime);
+    onStart(links, linkSwitchDurationSec, embedFadeOutMin*60);
   };
 
   return (
@@ -43,7 +49,7 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
               size="small"
               value={link}
               onChange={(e) => updateLink(index, e.target.value)}
-              placeholder="Spreadsheet URL"
+              placeholder="URL"
               sx={{ flex: 1 }}
               />
               {index === links.length - 1 && (
@@ -64,13 +70,24 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
               fullWidth
               size="small"
               type="number"
-              label="Animation pause time (seconds)"
-              value={animationPauseTime}
-              onChange={(e) => setAnimationPauseTime(Math.max(1, Number(e.target.value)))}
+              label="Link switch time (seconds)"
+              value={linkSwitchDurationSec}
+              onChange={(e) => setLinkSwitchDurationSec(Math.max(1, Number(e.target.value)))}
               />
             </Box>
 
           )}
+          <Box sx={{ my: 2 }}>
+            <TextField
+            fullWidth
+            size="small"
+            type="number"
+            label="Fade out time (minutes)"
+            value={embedFadeOutMin}
+            onChange={(e) => setEmbedFadeOutMin(Math.max(0, Number(e.target.value)))}
+            />
+          </Box>
+
 
             <Button
             onClick={handleStart}

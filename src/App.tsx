@@ -14,9 +14,18 @@ const CountdownTimer = () => {
   const [marginBottom, setMarginBottom] = useState(0);
   const [showForm, setShowForm] = useState(true);
   const [links, setLinks] = useState<string[]>([]);
-  const [animationPauseTime, setAnimationPauseTime] = useState(15);
+  const [linkSwitchDurationSec, setLinkSwitchDurationSec] = useState(0);
+  const [embedFadeOutSec, setEmbedFadeOutSec] = useState(0);
 
-  const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(60 * 60 * 1000);
+  const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(612 * 1000);
+  const remainingSeconds = time.seconds+time.minutes*60+time.hours*3600;
+
+  const processSetupFormSubmission = (newLinks: string[], linkSwitchDurationSec: number, embedFadeOutSec: number) => {
+    setLinks(newLinks);
+    setLinkSwitchDurationSec(linkSwitchDurationSec);
+    setShowForm(false);
+    setEmbedFadeOutSec(embedFadeOutSec);
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -53,12 +62,6 @@ const CountdownTimer = () => {
     };
   }, [time]);
 
-  const handleFormSubmit = (newLinks: string[], newAnimationPauseTime: number) => {
-    setLinks(newLinks);
-    setAnimationPauseTime(newAnimationPauseTime);
-    setShowForm(false);
-  };
-
   return (
     <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
       <CssBaseline />
@@ -78,12 +81,19 @@ const CountdownTimer = () => {
           onClick={toggleTimer}
         />
 
-        {showForm && <TimerSetupForm onStart={handleFormSubmit} />}
-
-        {!showForm && <ContentEmbed 
-          links={links} 
-          animationPauseTime={animationPauseTime} 
+        {showForm && <TimerSetupForm
+          onStart={processSetupFormSubmission} 
         />}
+
+        {!showForm && remainingSeconds > embedFadeOutSec-5 && (
+            <div className={`transition-opacity ease-out duration-4000 ${remainingSeconds < embedFadeOutSec ? 'opacity-0' : 'opacity-100'}`}>
+            <ContentEmbed 
+              links={links} 
+              animationPauseTime={linkSwitchDurationSec} 
+            />
+            </div>
+        )}
+
       </div>
     </ThemeProvider>
   );
