@@ -9,8 +9,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { lightTheme, darkTheme } from './theme';
 
 const CountdownTimer = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [fontSize, setFontSize] = useState(10);
+  const [darkMode, setDarkMode] = useState(true);
+  const [fontSize, setFontSize] = useState(window.innerWidth < 768 ? 6 : 10);  // Smaller on mobile
   const [marginBottom, setMarginBottom] = useState(0);
   const [showForm, setShowForm] = useState(true);
   const [links, setLinks] = useState<string[]>([]);
