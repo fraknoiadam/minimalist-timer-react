@@ -1,19 +1,24 @@
 import { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Switch, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import Settings from '@mui/icons-material/Settings';
+import { DarkMode, LightMode } from '@mui/icons-material';
 
 interface SettingsMenuProps {
   darkMode: boolean;
   setDarkMode: (value: boolean) => void;
   addSecondsToTimer: (seconds: number) => void;
   setFontSize: (cb: (prev: number) => number) => void;
+  embedOverflow: boolean;
+  setEmbedOverflow: (value: boolean) => void;
 }
 
 export const SettingsMenu = ({
   darkMode,
   setDarkMode,
   addSecondsToTimer,
-  setFontSize
+  setFontSize,
+  embedOverflow,
+  setEmbedOverflow
 }: SettingsMenuProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,15 +53,22 @@ export const SettingsMenu = ({
       >
         <DialogTitle>Settings</DialogTitle>
         <DialogContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span>Dark Mode</span>
-            <Button 
-              variant="outlined"
-              onClick={() => setDarkMode(!darkMode)}
+            <div className="flex items-center justify-between">
+            <span>Theme</span>
+            <ToggleButtonGroup
+              value={darkMode}
+              exclusive
+              onChange={(_, value) => value !== null && setDarkMode(value)}
+              size="small"
             >
-              {darkMode ? 'Disable' : 'Enable'}
-            </Button>
-          </div>
+                <ToggleButton value={false} className="px-8 py-8">
+                <LightMode /> Light
+                </ToggleButton>
+                <ToggleButton value={true} className="px-4 py-2">
+                <DarkMode /> Dark
+                </ToggleButton>
+            </ToggleButtonGroup>
+            </div>
 
           <div className="flex items-center justify-between">
             <span>Font Size</span>
@@ -74,6 +86,15 @@ export const SettingsMenu = ({
                 +
               </Button>
             </div>
+            </div>
+
+          <div className="flex items-center justify-between">
+            <span>Embedding overflow</span>
+            <Switch
+              checked={embedOverflow}
+              onChange={(e) => setEmbedOverflow(e.target.checked)}
+              color="primary"
+            />
           </div>
 
           <div className="flex items-center justify-between">

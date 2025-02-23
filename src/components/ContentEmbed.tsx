@@ -3,9 +3,16 @@ import { useEffect, useState } from 'react';
 interface ContentEmbedProps {
   links: string[];
   animationPauseTime: number;
+  timerHeight: number;
+  embedOverflow: boolean;
 }
 
-export const ContentEmbed = ({ links, animationPauseTime }: ContentEmbedProps) => {
+export const ContentEmbed = ({ 
+  links, 
+  animationPauseTime,
+  timerHeight,
+  embedOverflow
+}: ContentEmbedProps) => {
     const [currentLink, setCurrentLink] = useState(0);
 
     useEffect(() => {
@@ -30,7 +37,7 @@ export const ContentEmbed = ({ links, animationPauseTime }: ContentEmbedProps) =
         }`}
         // Pointer events allows to click on the current iframe (not on the hidden ones).
         style={{ 
-        height: `calc(100vh - 100px)`
+        height: `calc(100vh - ${timerHeight}px + ${embedOverflow ? 50 : 0}px)` // 50px for hide
         }}
       >
         <iframe

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { TimerDisplay } from './components/TimerDisplay';
 import { SettingsMenu } from './components/SettingsMenu';
 import { TimerSetupForm } from './components/TimerSetupForm';
@@ -16,6 +16,9 @@ const CountdownTimer = () => {
   const [links, setLinks] = useState<string[]>([]);
   const [linkSwitchDurationSec, setLinkSwitchDurationSec] = useState(0);
   const [embedFadeOutSec, setEmbedFadeOutSec] = useState(0);
+  const timerRef = useRef<HTMLDivElement>(null);
+  const [timerHeight, setTimerHeight] = useState(0);
+  const [embedOverflow, setEmbedOverflow] = useState(true);
 
   const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(612 * 1000);
   const remainingSeconds = time.seconds+time.minutes*60+time.hours*3600;
@@ -62,24 +65,40 @@ const CountdownTimer = () => {
     };
   }, [time]);
 
+  useEffect(() => {
+    const updateTimerHeight = () => {
+      if (timerRef.current) {
+        setTimerHeight(timerRef.current.offsetHeight);
+      }
+    };
+
+    updateTimerHeight();
+    window.addEventListener('resize', updateTimerHeight);
+    return () => window.removeEventListener('resize', updateTimerHeight);
+  }, [fontSize]); // Update when font size changes
+
   return (
     <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
       <CssBaseline />
-      <div className="min-h-screen w-screen">
+      <div className="h-screen w-screen overflow-hidden">
         <SettingsMenu
           darkMode={darkMode}
           setDarkMode={setDarkMode}
           addSecondsToTimer={addSecondsToTimer}
           setFontSize={setFontSize}
+          embedOverflow={embedOverflow}
+          setEmbedOverflow={setEmbedOverflow}
         />
 
-        <TimerDisplay
-          time={time}
-          isPaused={paused}
-          fontSize={fontSize}
-          marginBottom={marginBottom}
-          onClick={toggleTimer}
-        />
+        <div ref={timerRef}>
+          <TimerDisplay
+            time={time}
+            isPaused={paused}
+            fontSize={fontSize}
+            marginBottom={marginBottom}
+            onClick={toggleTimer}
+          />
+        </div>
 
         {showForm && <TimerSetupForm
           onStart={processSetupFormSubmission} 
@@ -90,6 +109,8 @@ const CountdownTimer = () => {
             <ContentEmbed 
               links={links} 
               animationPauseTime={linkSwitchDurationSec} 
+              timerHeight={timerHeight}
+              embedOverflow={embedOverflow}
             />
             </div>
         )}
