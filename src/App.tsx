@@ -31,11 +31,7 @@ const CountdownTimer = () => {
     
     // Request fullscreen on form submission
     try {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      } else if (document.documentElement.webkitRequestFullscreen) { // Safari
-        document.documentElement.webkitRequestFullscreen();
-      }
+      document.documentElement.requestFullscreen();
     } catch (error) {
       console.warn('Failed to enter fullscreen mode:', error);
     }
