@@ -88,6 +88,7 @@ const CountdownTimer = () => {
           setFontSize={setFontSize}
           embedOverflow={embedOverflow}
           setEmbedOverflow={setEmbedOverflow}
+          isSetupMode={showForm}  // Add this prop
         />
 
         <div ref={timerRef}>

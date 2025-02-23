@@ -10,6 +10,7 @@ interface SettingsMenuProps {
   setFontSize: (cb: (prev: number) => number) => void;
   embedOverflow: boolean;
   setEmbedOverflow: (value: boolean) => void;
+  isSetupMode: boolean;  // Add this prop
 }
 
 export const SettingsMenu = ({
@@ -18,7 +19,8 @@ export const SettingsMenu = ({
   addSecondsToTimer,
   setFontSize,
   embedOverflow,
-  setEmbedOverflow
+  setEmbedOverflow,
+  isSetupMode
 }: SettingsMenuProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,12 +29,12 @@ export const SettingsMenu = ({
     <>
       <div
         className="fixed top-0 left-0 w-20 h-20 z-50"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => !isSetupMode && setIsHovered(true)}
+        onMouseLeave={() => !isSetupMode && setIsHovered(false)}
       >
         <div
           className={`absolute top-0 left-0 p-4 transition-transform duration-300 ease-in-out ${
-            isHovered ? 'translate-y-0' : '-translate-y-full'
+            isSetupMode || isHovered ? 'translate-y-0' : '-translate-y-full'
           }`}
         >
           <Button
