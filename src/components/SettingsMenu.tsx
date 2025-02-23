@@ -78,20 +78,20 @@ export const SettingsMenu = ({
 
           <div className="flex items-center justify-between">
             <span>Adjust Timer</span>
-            <div className="flex gap-2">
-              <Button
-                variant="outlined"
-                onClick={() => addSecondsToTimer(-60)}
-              >
-                -1m
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => addSecondsToTimer(60)}
-              >
-                +1m
-              </Button>
+            <div className="flex flex-wrap gap-2 justify-end">
+              <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(-1)}>-1s</Button>
+              <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(-10)}>-10s</Button>
+              <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(-60)}>-1m</Button>
+              <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(-600)}>-10m</Button>
+              <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(-3600)}>-1h</Button>
+              <div className="w-full"></div>
+              <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(1)}>+1s</Button>
+              <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(10)}>+10s</Button>
+              <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(60)}>+1m</Button>
+              <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(600)}>+10m</Button>
+              <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(3600)}>+1h</Button>
             </div>
+
           </div>
         </DialogContent>
         <DialogActions>
