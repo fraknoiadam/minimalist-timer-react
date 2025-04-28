@@ -43,9 +43,6 @@ const CountdownTimer = () => {
           case 'b':
             setSettings(prev => ({ ...prev, fontSize: Math.max(1, prev.fontSize + (event.shiftKey ? 1 : -1)) }));
             break;
-          case 'v':
-            setSettings(prev => ({ ...prev, marginBottom: Math.max(0, prev.marginBottom + (event.shiftKey ? 1 : -1)) }));
-            break;
           case 'h':
             addSecondsToTimer(event.shiftKey ? 3600 : -3600);
             break;
@@ -85,12 +82,9 @@ const CountdownTimer = () => {
       <CssBaseline />
       <div className="h-screen w-screen overflow-hidden">
         <SettingsMenu
-          darkMode={settings.darkMode}
-          setDarkMode={(value) => setSettings(prev => ({ ...prev, darkMode: value }))}
+          settings={settings}
+          setSettings={setSettings}
           addSecondsToTimer={addSecondsToTimer}
-          setFontSize={(cb) => setSettings(prev => ({ ...prev, fontSize: cb(prev.fontSize) }))}
-          embedOverflow={settings.embedOverflow}
-          setEmbedOverflow={(value) => setSettings(prev => ({ ...prev, embedOverflow: value }))}
           isSetupMode={showForm}
         />
 
@@ -99,7 +93,7 @@ const CountdownTimer = () => {
             time={time}
             isPaused={paused}
             fontSize={settings.fontSize}
-            marginBottom={settings.marginBottom}
+            marginBottom={10}
             onClick={toggleTimer}
           />
         </div>
@@ -108,16 +102,13 @@ const CountdownTimer = () => {
           onStart={processSetupFormSubmission} 
         />}
 
-        {!showForm && remainingSeconds > settings.embedFadeOutSec-5 && (
-            <div className={`transition-opacity ease-out duration-4000 ${remainingSeconds < settings.embedFadeOutSec ? 'opacity-0' : 'opacity-100'}`}>
-            <ContentEmbed 
-              links={settings.links} 
-              animationPauseTime={settings.linkSwitchDurationSec} 
+        {!showForm && 
+            <ContentEmbed
+              remainingSeconds={remainingSeconds}
+              appSettings={settings}
               timerHeight={timerHeight}
-              embedOverflow={settings.embedOverflow}
             />
-            </div>
-        )}
+        }
 
       </div>
     </ThemeProvider>

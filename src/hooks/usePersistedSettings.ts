@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 
-interface AppSettings {
+export interface EmbedSettings {
+  links: string[];
+  linkSwitchDurationSec: number;
+  embedFadeOutSec: number;
+}
+
+export interface AppSettings {
   darkMode: boolean;
   fontSize: number;
   embedOverflow: boolean;
-  embedSettings?: {
-    links: string[];
-    linkSwitchDurationSec: number;
-    embedFadeOutSec: number;
-  };
+  embedSettings?: EmbedSettings;
 }
 
 const defaultSettings: AppSettings = {
