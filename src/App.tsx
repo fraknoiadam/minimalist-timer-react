@@ -7,28 +7,24 @@ import { useTimer } from './hooks/useTimer';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { lightTheme, darkTheme } from './theme';
+import { usePersistedSettings } from './hooks/usePersistedSettings';
 
 const CountdownTimer = () => {
-  const [darkMode, setDarkMode] = useState(true);
-  const [fontSize, setFontSize] = useState(window.innerWidth < 768 ? 6 : 10);  // Smaller on mobile
-  const [marginBottom, setMarginBottom] = useState(0);
+  const { settings, setSettings, updateEmbedSettings } = usePersistedSettings();
   const [showForm, setShowForm] = useState(true);
-  const [links, setLinks] = useState<string[]>([]);
-  const [linkSwitchDurationSec, setLinkSwitchDurationSec] = useState(0);
-  const [embedFadeOutSec, setEmbedFadeOutSec] = useState(0);
   const timerRef = useRef<HTMLDivElement>(null);
   const [timerHeight, setTimerHeight] = useState(0);
-  const [embedOverflow, setEmbedOverflow] = useState(true);
 
-  const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(90*60*1000);
-  const remainingSeconds = time.seconds+time.minutes*60+time.hours*3600;
+  const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(90 * 60 * 1000);
+  const remainingSeconds = time.seconds + time.minutes * 60 + time.hours * 3600;
 
-  const processSetupFormSubmission = (newLinks: string[], linkSwitchDurationSec: number, embedFadeOutSec: number) => {
-    setLinks(newLinks);
-    setLinkSwitchDurationSec(linkSwitchDurationSec);
+  const processSetupFormSubmission = (
+    links: string[],
+    linkSwitchDurationSec: number,
+    embedFadeOutSec: number
+  ) => {
+    updateEmbedSettings(links, linkSwitchDurationSec, embedFadeOutSec);
     setShowForm(false);
-    setEmbedFadeOutSec(embedFadeOutSec);
-    
     // Request fullscreen on form submission
     try {
       document.documentElement.requestFullscreen();
@@ -42,13 +38,13 @@ const CountdownTimer = () => {
       if (event.altKey) {
         switch (event.key.toLowerCase()) {
           case 'q':
-            setDarkMode(!event.shiftKey);
+            setSettings(prev => ({ ...prev, darkMode: !event.shiftKey }));
             break;
           case 'b':
-            setFontSize(prev => Math.max(1, prev + (event.shiftKey ? 1 : -1)));
+            setSettings(prev => ({ ...prev, fontSize: Math.max(1, prev.fontSize + (event.shiftKey ? 1 : -1)) }));
             break;
           case 'v':
-            setMarginBottom(prev => Math.max(0, prev + (event.shiftKey ? 1 : -1)));
+            setSettings(prev => ({ ...prev, marginBottom: Math.max(0, prev.marginBottom + (event.shiftKey ? 1 : -1)) }));
             break;
           case 'h':
             addSecondsToTimer(event.shiftKey ? 3600 : -3600);
@@ -82,28 +78,28 @@ const CountdownTimer = () => {
     updateTimerHeight();
     window.addEventListener('resize', updateTimerHeight);
     return () => window.removeEventListener('resize', updateTimerHeight);
-  }, [fontSize]); // Update when font size changes
+  }, [settings.fontSize]); // Update when font size changes
 
   return (
-    <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
+    <ThemeProvider theme={settings.darkMode ? darkTheme : lightTheme}>
       <CssBaseline />
       <div className="h-screen w-screen overflow-hidden">
         <SettingsMenu
-          darkMode={darkMode}
-          setDarkMode={setDarkMode}
+          darkMode={settings.darkMode}
+          setDarkMode={(value) => setSettings(prev => ({ ...prev, darkMode: value }))}
           addSecondsToTimer={addSecondsToTimer}
-          setFontSize={setFontSize}
-          embedOverflow={embedOverflow}
-          setEmbedOverflow={setEmbedOverflow}
-          isSetupMode={showForm}  // Add this prop
+          setFontSize={(cb) => setSettings(prev => ({ ...prev, fontSize: cb(prev.fontSize) }))}
+          embedOverflow={settings.embedOverflow}
+          setEmbedOverflow={(value) => setSettings(prev => ({ ...prev, embedOverflow: value }))}
+          isSetupMode={showForm}
         />
 
         <div ref={timerRef}>
           <TimerDisplay
             time={time}
             isPaused={paused}
-            fontSize={fontSize}
-            marginBottom={marginBottom}
+            fontSize={settings.fontSize}
+            marginBottom={settings.marginBottom}
             onClick={toggleTimer}
           />
         </div>
@@ -112,13 +108,13 @@ const CountdownTimer = () => {
           onStart={processSetupFormSubmission} 
         />}
 
-        {!showForm && remainingSeconds > embedFadeOutSec-5 && (
-            <div className={`transition-opacity ease-out duration-4000 ${remainingSeconds < embedFadeOutSec ? 'opacity-0' : 'opacity-100'}`}>
+        {!showForm && remainingSeconds > settings.embedFadeOutSec-5 && (
+            <div className={`transition-opacity ease-out duration-4000 ${remainingSeconds < settings.embedFadeOutSec ? 'opacity-0' : 'opacity-100'}`}>
             <ContentEmbed 
-              links={links} 
-              animationPauseTime={linkSwitchDurationSec} 
+              links={settings.links} 
+              animationPauseTime={settings.linkSwitchDurationSec} 
               timerHeight={timerHeight}
-              embedOverflow={embedOverflow}
+              embedOverflow={settings.embedOverflow}
             />
             </div>
         )}

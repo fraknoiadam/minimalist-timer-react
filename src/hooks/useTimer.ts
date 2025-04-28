@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { TimerState } from '../types/timer';
 
 const secondsToTimerState = (totalMs: number): TimerState => {
@@ -13,69 +13,91 @@ const secondsToTimerState = (totalMs: number): TimerState => {
   };
 };
 
-
 export const useTimer = (initialTotalMs: number) => {
-  const [time, setTime] = useState<TimerState>(secondsToTimerState(initialTotalMs));
-  const [paused, setPaused] = useState(true);
-  const [totalMs, setTotalMs] = useState(initialTotalMs);
-  const [startTime, setStartTime] = useState<Date | null>(null);
-  const [pauseStart, setPauseStart] = useState<Date>(new Date());
-  const [totalPauseMs, setTotalPauseMs] = useState(0);
   const intervalRef = useRef<number | null>(null);
+  const [timerState, setTimerState] = useState<TimerState>(() => {
+    const saved = localStorage.getItem('durerTimer');
+    return saved ? JSON.parse(saved) : {
+      totalMs: initialTotalMs,
+      paused: true,
+      startTime: null,
+      pauseStart: Date.now(),
+      totalPauseMs: 0
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('durerTimer', JSON.stringify(timerState));
+  }, [timerState]);
 
   const calculateRemainingMs = (): number => {
-    if (startTime === null) {
-      return totalMs;
+    if (timerState.startTime === null) {
+      return timerState.totalMs;
     }
-    if (paused) {
-      return totalMs - (pauseStart.getTime() - startTime.getTime() - totalPauseMs)
+    if (timerState.paused) {
+      return timerState.totalMs - (timerState.pauseStart - timerState.startTime - timerState.totalPauseMs);
     }
-    const currentTime = new Date;
-    const elapsedTime = (currentTime.getTime() - startTime.getTime() - totalPauseMs);
-    return totalMs - elapsedTime;
+    const currentTime = Date.now();
+    const elapsedTime = (currentTime - timerState.startTime - timerState.totalPauseMs);
+    return timerState.totalMs - elapsedTime;
   };
 
   const addSecondsToTimer = (seconds: number) => {
-    setTotalMs(prevTotalMs => prevTotalMs + seconds * 1000);
+    setTimerState(prevState => ({
+      ...prevState,
+      totalMs: prevState.totalMs + seconds * 1000
+    }));
   }
 
   useEffect(() => {
     const updateTime = () => {
-      setTime(secondsToTimerState(calculateRemainingMs()));
+      setTimerState(prevState => ({
+        ...prevState,
+        time: secondsToTimerState(calculateRemainingMs())
+      }));
     };
 
     // Update immediately
     updateTime();
 
     // If not paused, set up interval
-    if (!paused) {
+    if (!timerState.paused) {
       intervalRef.current = window.setInterval(updateTime, 20);
     }
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [paused, totalMs, startTime, totalPauseMs, pauseStart]);
+  }, [timerState.paused, timerState.totalMs, timerState.startTime, timerState.totalPauseMs, timerState.pauseStart]);
 
   const toggleTimer = () => {
-    const now = new Date;
-    if (startTime === null) {
-      setStartTime(new Date);
-    } else if (paused) {
-      setTotalPauseMs(
-        prevTotalPauseMs => prevTotalPauseMs + now.getTime() - pauseStart.getTime()
-      );
+    const now = Date.now();
+    if (timerState.startTime === null) {
+      setTimerState(prevState => ({
+        ...prevState,
+        startTime: now
+      }));
+    } else if (timerState.paused) {
+      setTimerState(prevState => ({
+        ...prevState,
+        totalPauseMs: prevState.totalPauseMs + now - prevState.pauseStart
+      }));
     }
 
-    setPaused(prevPaused => {
-      if (prevPaused === false) { // Resuming
-        setPauseStart(now);
-      }
-      return !prevPaused;
-    });
+    setTimerState(prevState => ({
+      ...prevState,
+      paused: !prevState.paused,
+      pauseStart: prevState.paused ? prevState.pauseStart : now
+    }));
   };
 
-  return { time, paused, addSecondsToTimer, toggleTimer };
+  return { 
+    time: secondsToTimerState(calculateRemainingMs()),
+    paused: timerState.paused,
+    addSecondsToTimer,
+    toggleTimer
+  };
 };
