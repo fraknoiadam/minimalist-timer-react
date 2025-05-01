@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { TimerState } from '../types/timer';
+import { useState, useEffect, useRef, useReducer } from 'react';
+import { TimeRemaining, TimerState } from '../types/timer';
 
-const secondsToTimerState = (totalMs: number): TimerState => {
+// This is for the visual display of time
+const secondsToTimerState = (totalMs: number): TimeRemaining => {
   if (totalMs <= 0) {
     return { hours: 0, minutes: 0, seconds: 0 };
   }
@@ -15,16 +16,14 @@ const secondsToTimerState = (totalMs: number): TimerState => {
 
 export const useTimer = (initialTotalMs: number) => {
   const intervalRef = useRef<number | null>(null);
-  const [timerState, setTimerState] = useState<TimerState>(() => {
-    const saved = localStorage.getItem('durerTimer');
-    return saved ? JSON.parse(saved) : {
-      totalMs: initialTotalMs,
-      paused: true,
-      startTime: null,
-      pauseStart: Date.now(),
-      totalPauseMs: 0
-    };
-  });
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  const [timerState, setTimerState] = useState<TimerState>(() => ({
+    totalMs: initialTotalMs,
+    paused: true,
+    startTime: null,
+    pauseStart: Date.now(),
+    totalPauseMs: 0
+  }));
 
   useEffect(() => {
     localStorage.setItem('durerTimer', JSON.stringify(timerState));
@@ -49,20 +48,9 @@ export const useTimer = (initialTotalMs: number) => {
     }));
   }
 
-  useEffect(() => {
-    const updateTime = () => {
-      setTimerState(prevState => ({
-        ...prevState,
-        time: secondsToTimerState(calculateRemainingMs())
-      }));
-    };
-
-    // Update immediately
-    updateTime();
-
-    // If not paused, set up interval
+  useEffect(() => {    
     if (!timerState.paused) {
-      intervalRef.current = window.setInterval(updateTime, 20);
+      intervalRef.current = window.setInterval(forceUpdate, 20);
     }
 
     return () => {
@@ -94,7 +82,7 @@ export const useTimer = (initialTotalMs: number) => {
     }));
   };
 
-  return { 
+  return {
     time: secondsToTimerState(calculateRemainingMs()),
     paused: timerState.paused,
     addSecondsToTimer,
