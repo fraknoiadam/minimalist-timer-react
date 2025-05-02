@@ -41,11 +41,11 @@ export const SavedTimerStates: React.FC<SavedTimerStatesProps> = ({
         <Grid container spacing={2}>
           {savedStates.map((state) => (
             <Grid size={{ md: 1.5 }} key={state.id}>
-              <Card sx={{ p: 2 }}>
+              <Card sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' } }>
                 <Typography variant="body1" sx={{ mb: 0.5 }}>
                   Remaining: {getCurrentRemainingTime(state)}
                 </Typography>
-                {state.appSettings.embedSettings?.links && (
+                {state.appSettings.embedSettings?.links && state.appSettings.embedSettings.links.length > 0 && (
                   <Tooltip
                     title={
                       <Box>
@@ -71,6 +71,8 @@ export const SavedTimerStates: React.FC<SavedTimerStatesProps> = ({
                 >
                   Created {formatDistance(state.savedAt, currentTime, { addSuffix: true })}
                 </Typography>
+
+                <Box sx={{ flexGrow: 1 }} /> {/* This flex spacer pushes buttons to bottom */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Button 
                     variant="contained" 

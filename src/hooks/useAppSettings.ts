@@ -17,15 +17,21 @@ export const useAppSettings = () => {
     links: string[],
     linkSwitchDurationSec: number,
     embedFadeOutSec: number
-  ) => {
-    setSettings(prev => ({
-      ...prev,
-      embedSettings: {
-        links,
-        linkSwitchDurationSec,
-        embedFadeOutSec
-      }
-    }));
+  ): AppSettings => {
+    let updatedSettings: AppSettings;
+  
+    setSettings(prev => {
+      updatedSettings = {
+        ...prev,
+        embedSettings: {
+          links,
+          linkSwitchDurationSec,
+          embedFadeOutSec
+        }
+      };
+      return updatedSettings;
+    });
+    return updatedSettings!;
   };
 
   return {

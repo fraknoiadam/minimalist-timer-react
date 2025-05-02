@@ -23,6 +23,7 @@ const CountdownTimer = () => {
   const remainingSeconds = time.seconds + time.minutes * 60 + time.hours * 3600;
 
   useEffect(() => {
+    console.log('Timer state updated');
     updateSavedState(timerState, settings);
   }, [timerState, settings]);
 
@@ -31,8 +32,10 @@ const CountdownTimer = () => {
     linkSwitchDurationSec: number,
     embedFadeOutSec: number
   ) => {
-    updateEmbedSettings(links, linkSwitchDurationSec, embedFadeOutSec);
-    addSavedState(timerState, settings);
+    links = links.filter(link => link.trim() !== '');
+    const updatedSettings = updateEmbedSettings(links, linkSwitchDurationSec, embedFadeOutSec);
+    console.log('Updated settings:', updatedSettings);
+    addSavedState(timerState, updatedSettings);
     setShowForm(false);
 
     try {
