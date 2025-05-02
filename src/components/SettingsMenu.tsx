@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Switch, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import Settings from '@mui/icons-material/Settings';
 import { DarkMode, LightMode } from '@mui/icons-material';
-import { AppSettings } from '../hooks/usePersistedSettings';
+import { AppSettings } from '../types/timer';
 
 interface SettingsMenuProps {
   settings: AppSettings;
-  setSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
+  setSettings: Dispatch<SetStateAction<AppSettings>>;
   addSecondsToTimer: (seconds: number) => void;
   isSetupMode: boolean;  // Add this prop
 }

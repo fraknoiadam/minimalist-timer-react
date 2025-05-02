@@ -1,17 +1,5 @@
-import { useState, useEffect } from 'react';
-
-export interface EmbedSettings {
-  links: string[];
-  linkSwitchDurationSec: number;
-  embedFadeOutSec: number;
-}
-
-export interface AppSettings {
-  darkMode: boolean;
-  fontSize: number;
-  embedOverflow: boolean;
-  embedSettings?: EmbedSettings;
-}
+import { useState } from 'react';
+import { AppSettings } from '../types/timer';
 
 const defaultSettings: AppSettings = {
   darkMode: true,
@@ -19,15 +7,11 @@ const defaultSettings: AppSettings = {
   embedOverflow: true
 };
 
-export const usePersistedSettings = () => {
+export const useAppSettings = () => {
   const [settings, setSettings] = useState<AppSettings>(() => {
     const saved = localStorage.getItem('durerSettings');
     return saved ? JSON.parse(saved) : defaultSettings;
   });
-
-  useEffect(() => {
-    localStorage.setItem('durerSettings', JSON.stringify(settings));
-  }, [settings]);
 
   const updateEmbedSettings = (
     links: string[],

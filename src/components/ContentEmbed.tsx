@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AppSettings } from '../hooks/usePersistedSettings';
+import { AppSettings } from '../types/timer';
 
 interface ContentEmbedProps {
   remainingSeconds: number;

@@ -3,20 +3,28 @@ import { TimerDisplay } from './components/TimerDisplay';
 import { SettingsMenu } from './components/SettingsMenu';
 import { TimerSetupForm } from './components/TimerSetupForm';
 import { ContentEmbed } from './components/ContentEmbed';
+import { SavedTimerStates } from './components/SavedTimerStates';
 import { useTimer } from './hooks/useTimer';
+import { useSavedTimerStates } from './hooks/useSavedTimerStates';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { lightTheme, darkTheme } from './theme';
-import { usePersistedSettings } from './hooks/usePersistedSettings';
+import { useAppSettings } from './hooks/useAppSettings';
 
 const CountdownTimer = () => {
-  const { settings, setSettings, updateEmbedSettings } = usePersistedSettings();
   const [showForm, setShowForm] = useState(true);
   const timerRef = useRef<HTMLDivElement>(null);
   const [timerHeight, setTimerHeight] = useState(0);
+  
+  const { time, paused, timerState, addSecondsToTimer, toggleTimer, setTimerState } = useTimer(90 * 60 * 1000);
+  const { settings, setSettings, updateEmbedSettings } = useAppSettings();
+  const { savedStates, updateSavedState, deleteSavedState, addSavedState, setCurrentID } = useSavedTimerStates();
 
-  const { time, paused, addSecondsToTimer, toggleTimer } = useTimer(90 * 60 * 1000);
   const remainingSeconds = time.seconds + time.minutes * 60 + time.hours * 3600;
+
+  useEffect(() => {
+    updateSavedState(timerState, settings);
+  }, [timerState, settings]);
 
   const processSetupFormSubmission = (
     links: string[],
@@ -24,8 +32,9 @@ const CountdownTimer = () => {
     embedFadeOutSec: number
   ) => {
     updateEmbedSettings(links, linkSwitchDurationSec, embedFadeOutSec);
+    addSavedState(timerState, settings);
     setShowForm(false);
-    // Request fullscreen on form submission
+
     try {
       document.documentElement.requestFullscreen();
     } catch (error) {
@@ -80,7 +89,7 @@ const CountdownTimer = () => {
   return (
     <ThemeProvider theme={settings.darkMode ? darkTheme : lightTheme}>
       <CssBaseline />
-      <div className="h-screen w-screen overflow-hidden">
+      <div className={`h-screen w-screen ${showForm ? 'overflow-auto' : 'overflow-hidden'}`}>
         <SettingsMenu
           settings={settings}
           setSettings={setSettings}
@@ -98,9 +107,25 @@ const CountdownTimer = () => {
           />
         </div>
 
-        {showForm && <TimerSetupForm
-          onStart={processSetupFormSubmission} 
-        />}
+        {showForm && (
+          <>
+            <SavedTimerStates
+              savedStates={savedStates}
+              onLoadState={(id) => {
+                savedStates.forEach(state => {
+                  if (state.id === id) {
+                    setTimerState(state.timerState);
+                    setSettings(state.appSettings);
+                    setCurrentID(id);
+                  };
+                });
+                setShowForm(false);
+              }}
+              onDeleteState={deleteSavedState}
+            />
+            <TimerSetupForm onStart={processSetupFormSubmission} />
+          </>
+        )}
 
         {!showForm && 
             <ContentEmbed
@@ -109,7 +134,6 @@ const CountdownTimer = () => {
               timerHeight={timerHeight}
             />
         }
-
       </div>
     </ThemeProvider>
   );

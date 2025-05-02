@@ -1,18 +1,35 @@
-import { useState, useEffect, useRef, useReducer } from 'react';
+import { useState, useEffect, useRef, useReducer, Dispatch, SetStateAction } from 'react';
 import { TimeRemaining, TimerState } from '../types/timer';
 
-// This is for the visual display of time
-const secondsToTimerState = (totalMs: number): TimeRemaining => {
-  if (totalMs <= 0) {
+function calculateRemainingMs(timerState: TimerState): number {
+  if (timerState.startTime === null) {
+    return timerState.totalMs;
+  }
+  if (timerState.paused) {
+    return timerState.totalMs - (timerState.pauseStart - timerState.startTime - timerState.totalPauseMs);
+  }
+  const currentTime = Date.now();
+  const elapsedTime = (currentTime - timerState.startTime - timerState.totalPauseMs);
+  return timerState.totalMs - elapsedTime;
+};
+
+function msToRemainingTime(ms: number): TimeRemaining {
+  if (ms <= 0) {
     return { hours: 0, minutes: 0, seconds: 0 };
   }
-  const totalSec = Math.ceil(totalMs / 1000);
+  const totalSec = Math.ceil(ms / 1000);
   return {
     hours: Math.floor(totalSec / 3600),
     minutes: Math.floor((totalSec % 3600) / 60),
     seconds: totalSec % 60
   };
 };
+
+export function calculateRemainingTime(timerState: TimerState): TimeRemaining {
+  const totalMs = calculateRemainingMs(timerState);
+  return msToRemainingTime(totalMs);
+};
+
 
 export const useTimer = (initialTotalMs: number) => {
   const intervalRef = useRef<number | null>(null);
@@ -24,22 +41,6 @@ export const useTimer = (initialTotalMs: number) => {
     pauseStart: Date.now(),
     totalPauseMs: 0
   }));
-
-  useEffect(() => {
-    localStorage.setItem('durerTimer', JSON.stringify(timerState));
-  }, [timerState]);
-
-  const calculateRemainingMs = (): number => {
-    if (timerState.startTime === null) {
-      return timerState.totalMs;
-    }
-    if (timerState.paused) {
-      return timerState.totalMs - (timerState.pauseStart - timerState.startTime - timerState.totalPauseMs);
-    }
-    const currentTime = Date.now();
-    const elapsedTime = (currentTime - timerState.startTime - timerState.totalPauseMs);
-    return timerState.totalMs - elapsedTime;
-  };
 
   const addSecondsToTimer = (seconds: number) => {
     setTimerState(prevState => ({
@@ -83,9 +84,11 @@ export const useTimer = (initialTotalMs: number) => {
   };
 
   return {
-    time: secondsToTimerState(calculateRemainingMs()),
+    time: calculateRemainingTime(timerState),
     paused: timerState.paused,
+    timerState,
     addSecondsToTimer,
-    toggleTimer
+    toggleTimer,
+    setTimerState
   };
 };
