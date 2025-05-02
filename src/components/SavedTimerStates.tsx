@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Box, Typography, Grid2 } from '@mui/material';
+import { Card, Button, Box, Typography, Tooltip } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { SavedState } from '../types/timer';
 import { formatDistance } from 'date-fns';
 import { calculateRemainingTime } from '../hooks/useTimer';
@@ -37,13 +38,31 @@ export const SavedTimerStates: React.FC<SavedTimerStatesProps> = ({
         <Box sx={{ mb: 2 }}>
             <Typography variant="h5">Recently used</Typography>
         </Box>
-        <Grid2 container spacing={2}>
+        <Grid container spacing={2}>
           {savedStates.map((state) => (
-            <Grid2 item xs={12} sm={6} md={4} key={state.id}>
+            <Grid size={{ md: 1.5 }} key={state.id}>
               <Card sx={{ p: 2 }}>
                 <Typography variant="body1" sx={{ mb: 0.5 }}>
                   Remaining: {getCurrentRemainingTime(state)}
                 </Typography>
+                {state.appSettings.embedSettings?.links && (
+                  <Tooltip
+                    title={
+                      <Box>
+                        {state.appSettings.embedSettings.links.map((link, index) => (
+                          <Typography key={index} variant="caption" display="block">
+                            {link}
+                          </Typography>
+                        ))}
+                      </Box>
+                    }
+                    arrow
+                  >
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, cursor: 'pointer' }}>
+                      Links: {state.appSettings.embedSettings.links.length}
+                    </Typography>
+                  </Tooltip>
+                )}
                 <Typography 
                   variant="body2" 
                   color="text.secondary" 
@@ -69,9 +88,9 @@ export const SavedTimerStates: React.FC<SavedTimerStatesProps> = ({
                   </Button>
                 </Box>
               </Card>
-            </Grid2>
+            </Grid>
           ))}
-        </Grid2>
+        </Grid>
       </>)}
     </Box>
   );
