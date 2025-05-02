@@ -13,7 +13,10 @@ export const ContentEmbed = ({
   timerHeight,
 }: ContentEmbedProps) => {
   const { embedSettings, embedOverflow } = appSettings;
-  if (!embedSettings || embedSettings.links.length === 0 || remainingSeconds < embedSettings.embedFadeOutSec - 5) {
+  if (!embedSettings || 
+      embedSettings.links.length === 0 || 
+      embedSettings.links.every(link => !link) || 
+      remainingSeconds < embedSettings.embedFadeOutSec - 5) {
     return null; // No links to display
   }
   const { links, linkSwitchDurationSec } = embedSettings;

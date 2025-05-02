@@ -38,7 +38,7 @@ const CountdownTimer = () => {
     try {
       document.documentElement.requestFullscreen();
     } catch (error) {
-      console.warn('Failed to enter fullscreen mode:', error);
+      console.error('Failed to enter fullscreen mode:', error);
     }
   };
 

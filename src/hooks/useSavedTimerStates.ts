@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AppSettings, SavedState, TimerState } from '../types/timer';
 
-function loadSavedStatesFromLocalStorage(): SavedState[] {
+const savedStatesInLocalStorage = (): SavedState[] => {
   const savedTimersJson = localStorage.getItem('durerTimerSavedStates');
   if (savedTimersJson) {
     try {
@@ -9,18 +9,15 @@ function loadSavedStatesFromLocalStorage(): SavedState[] {
       return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
       console.error('Failed to parse saved timer states:', e);
+      return [];
     }
   }
   return [];
-}
+};
 
 export const useSavedTimerStates = () => {
-  const [savedStates, setSavedStates] = useState<SavedState[]>([]);
+  const [savedStates, setSavedStates] = useState<SavedState[]>(savedStatesInLocalStorage);
   const [currentID, setCurrentID] = useState<string | null>(null);
-
-  useEffect(() => {
-    setSavedStates(loadSavedStatesFromLocalStorage());
-  }, []);
 
   useEffect(() => {
     localStorage.setItem('durerTimerSavedStates', JSON.stringify(savedStates));
