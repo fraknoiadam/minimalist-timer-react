@@ -115,13 +115,11 @@ const CountdownTimer = () => {
             <SavedTimerStates
               savedStates={savedStates}
               onLoadState={(id) => {
-                savedStates.forEach(state => {
-                  if (state.id === id) {
-                    setTimerState(state.timerState);
-                    setSettings(state.appSettings);
-                    setCurrentID(id);
-                  };
-                });
+                const state = savedStates.find(state => state.id === id);
+                if (!state) throw new Error('State not found');
+                setTimerState(state.timerState);
+                setSettings(state.appSettings);
+                setCurrentID(id);
                 setShowForm(false);
               }}
               onDeleteState={deleteSavedState}

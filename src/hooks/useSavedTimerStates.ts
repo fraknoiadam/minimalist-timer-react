@@ -37,10 +37,10 @@ export const useSavedTimerStates = () => {
     setSavedStates(updatedStates);
   };
 
-  const addSavedState = (newTimerState: TimerState, newAppSettings: AppSettings, name: string = "aa") => {
+  const addSavedState = (newTimerState: TimerState, newAppSettings: AppSettings, name: string = "") => {
     const newSavedState: SavedState = {
       id: crypto.randomUUID(),
-      name: "asd",
+      name: name,
       savedAt: Date.now(),
       timerState: newTimerState,
       appSettings: newAppSettings,
