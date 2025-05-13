@@ -1,11 +1,23 @@
-import { useState, useRef, useEffect } from 'react';
-import { TimerState } from '../types/timer';
+import { useState, useEffect, useRef, useReducer } from 'react';
+import { TimeRemaining, TimerState } from '../types/timer';
 
-const secondsToTimerState = (totalMs: number): TimerState => {
-  if (totalMs <= 0) {
+function calculateRemainingMs(timerState: TimerState): number {
+  if (timerState.startTime === null) {
+    return timerState.totalMs;
+  }
+  if (timerState.paused) {
+    return timerState.totalMs - (timerState.pauseStart - timerState.startTime - timerState.totalPauseMs);
+  }
+  const currentTime = Date.now();
+  const elapsedTime = (currentTime - timerState.startTime - timerState.totalPauseMs);
+  return timerState.totalMs - elapsedTime;
+};
+
+function msToRemainingTime(ms: number): TimeRemaining {
+  if (ms <= 0) {
     return { hours: 0, minutes: 0, seconds: 0 };
   }
-  const totalSec = Math.ceil(totalMs / 1000);
+  const totalSec = Math.ceil(ms / 1000);
   return {
     hours: Math.floor(totalSec / 3600),
     minutes: Math.floor((totalSec % 3600) / 60),
@@ -13,69 +25,70 @@ const secondsToTimerState = (totalMs: number): TimerState => {
   };
 };
 
+export function calculateRemainingTime(timerState: TimerState): TimeRemaining {
+  const totalMs = calculateRemainingMs(timerState);
+  return msToRemainingTime(totalMs);
+};
+
 
 export const useTimer = (initialTotalMs: number) => {
-  const [time, setTime] = useState<TimerState>(secondsToTimerState(initialTotalMs));
-  const [paused, setPaused] = useState(true);
-  const [totalMs, setTotalMs] = useState(initialTotalMs);
-  const [startTime, setStartTime] = useState<Date | null>(null);
-  const [pauseStart, setPauseStart] = useState<Date>(new Date());
-  const [totalPauseMs, setTotalPauseMs] = useState(0);
   const intervalRef = useRef<number | null>(null);
-
-  const calculateRemainingMs = (): number => {
-    if (startTime === null) {
-      return totalMs;
-    }
-    if (paused) {
-      return totalMs - (pauseStart.getTime() - startTime.getTime() - totalPauseMs)
-    }
-    const currentTime = new Date;
-    const elapsedTime = (currentTime.getTime() - startTime.getTime() - totalPauseMs);
-    return totalMs - elapsedTime;
-  };
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  const [timerState, setTimerState] = useState<TimerState>(() => ({
+    totalMs: initialTotalMs,
+    paused: true,
+    startTime: null,
+    pauseStart: Date.now(),
+    totalPauseMs: 0
+  }));
 
   const addSecondsToTimer = (seconds: number) => {
-    setTotalMs(prevTotalMs => prevTotalMs + seconds * 1000);
+    setTimerState(prevState => ({
+      ...prevState,
+      totalMs: prevState.totalMs + seconds * 1000
+    }));
   }
 
-  useEffect(() => {
-    const updateTime = () => {
-      setTime(secondsToTimerState(calculateRemainingMs()));
-    };
-
-    // Update immediately
-    updateTime();
-
-    // If not paused, set up interval
-    if (!paused) {
-      intervalRef.current = window.setInterval(updateTime, 20);
+  useEffect(() => {    
+    if (!timerState.paused) {
+      intervalRef.current = window.setInterval(forceUpdate, 20);
     }
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [paused, totalMs, startTime, totalPauseMs, pauseStart]);
+  }, [timerState.paused, timerState.totalMs, timerState.startTime, timerState.totalPauseMs, timerState.pauseStart]);
 
   const toggleTimer = () => {
-    const now = new Date;
-    if (startTime === null) {
-      setStartTime(new Date);
-    } else if (paused) {
-      setTotalPauseMs(
-        prevTotalPauseMs => prevTotalPauseMs + now.getTime() - pauseStart.getTime()
-      );
+    const now = Date.now();
+    if (timerState.startTime === null) {
+      setTimerState(prevState => ({
+        ...prevState,
+        startTime: now
+      }));
+    } else if (timerState.paused) {
+      setTimerState(prevState => ({
+        ...prevState,
+        totalPauseMs: prevState.totalPauseMs + now - prevState.pauseStart
+      }));
     }
 
-    setPaused(prevPaused => {
-      if (prevPaused === false) { // Resuming
-        setPauseStart(now);
-      }
-      return !prevPaused;
-    });
+    setTimerState(prevState => ({
+      ...prevState,
+      paused: !prevState.paused,
+      pauseStart: prevState.paused ? prevState.pauseStart : now
+    }));
   };
 
-  return { time, paused, addSecondsToTimer, toggleTimer };
+  return {
+    time: calculateRemainingTime(timerState),
+    paused: timerState.paused,
+    timerState,
+    addSecondsToTimer,
+    toggleTimer,
+    setTimerState
+  };
 };

@@ -1,25 +1,20 @@
-import { useState } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Switch, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import Settings from '@mui/icons-material/Settings';
 import { DarkMode, LightMode } from '@mui/icons-material';
+import { AppSettings } from '../types/timer';
 
 interface SettingsMenuProps {
-  darkMode: boolean;
-  setDarkMode: (value: boolean) => void;
+  settings: AppSettings;
+  setSettings: Dispatch<SetStateAction<AppSettings>>;
   addSecondsToTimer: (seconds: number) => void;
-  setFontSize: (cb: (prev: number) => number) => void;
-  embedOverflow: boolean;
-  setEmbedOverflow: (value: boolean) => void;
   isSetupMode: boolean;  // Add this prop
 }
 
 export const SettingsMenu = ({
-  darkMode,
-  setDarkMode,
+  settings,
+  setSettings,
   addSecondsToTimer,
-  setFontSize,
-  embedOverflow,
-  setEmbedOverflow,
   isSetupMode
 }: SettingsMenuProps) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -59,9 +54,9 @@ export const SettingsMenu = ({
             <div className="flex items-center justify-between">
             <span>Theme</span>
             <ToggleButtonGroup
-              value={darkMode}
+              value={settings.darkMode}
               exclusive
-              onChange={(_, value) => value !== null && setDarkMode(value)}
+              onChange={(_, value) => value !== null && setSettings(prev => ({ ...prev, darkMode: value }))}
               size="small"
             >
                 <ToggleButton value={false} className="px-8 py-8">
@@ -78,13 +73,13 @@ export const SettingsMenu = ({
             <div className="flex gap-2">
               <Button
                 variant="outlined"
-                onClick={() => setFontSize(prev => prev - 1)}
+                onClick={() => setSettings(prev => ({ ...prev, fontSize: prev.fontSize - 1 }))}
               >
                 -
               </Button>
               <Button
                 variant="outlined"
-                onClick={() => setFontSize(prev => prev + 1)}
+                onClick={() => setSettings(prev => ({ ...prev, fontSize: prev.fontSize + 1 }))}
               >
                 +
               </Button>
@@ -94,8 +89,8 @@ export const SettingsMenu = ({
           <div className="flex items-center justify-between">
             <span>Embedding overflow</span>
             <Switch
-              checked={embedOverflow}
-              onChange={(e) => setEmbedOverflow(e.target.checked)}
+              checked={settings.embedOverflow}
+              onChange={(e) => setSettings(prev => ({ ...prev, embedOverflow: e.target.checked}))}
               color="primary"
             />
           </div>
