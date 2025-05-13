@@ -13,14 +13,15 @@ export const ContentEmbed = ({
   timerHeight,
 }: ContentEmbedProps) => {
   const { embedSettings, embedOverflow } = appSettings;
-  if (!embedSettings || 
-      embedSettings.links.length === 0 || 
-      embedSettings.links.every(link => !link) || 
-      remainingSeconds < embedSettings.embedFadeOutSec - 5) {
-    return null; // No links to display
-  }
-  const { links, linkSwitchDurationSec } = embedSettings;
+  const links = embedSettings?.links ?? [];
+  const linkSwitchDurationSec = embedSettings?.linkSwitchDurationSec ?? 0;
   const [currentLink, setCurrentLink] = useState(0);
+
+  const shouldHide =
+    !embedSettings ||
+    links.length === 0 ||
+    links.every(link => !link) ||
+    remainingSeconds < embedSettings.embedFadeOutSec - 5;
 
   useEffect(() => {
     if (links.length > 1) {
@@ -31,6 +32,10 @@ export const ContentEmbed = ({
       return () => clearInterval(interval);
     }
   }, [links.length, linkSwitchDurationSec]);
+
+  if (shouldHide) {
+    return null; // No links to display
+  }
 
   return (
     <div className={`transition-opacity ease-out duration-4000 ${remainingSeconds < embedSettings.embedFadeOutSec ? 'opacity-0' : 'opacity-100'}`}>

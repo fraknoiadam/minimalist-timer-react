@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useReducer, Dispatch, SetStateAction } from 'react';
+import { useState, useEffect, useRef, useReducer } from 'react';
 import { TimeRemaining, TimerState } from '../types/timer';
 
 function calculateRemainingMs(timerState: TimerState): number {

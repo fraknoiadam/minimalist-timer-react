@@ -10,22 +10,24 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { lightTheme, darkTheme } from './theme';
 import { useAppSettings } from './hooks/useAppSettings';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 const CountdownTimer = () => {
   const [showForm, setShowForm] = useState(true);
   const timerRef = useRef<HTMLDivElement>(null);
   const [timerHeight, setTimerHeight] = useState(0);
-  
+
   const { time, paused, timerState, addSecondsToTimer, toggleTimer, setTimerState } = useTimer(90 * 60 * 1000);
   const { settings, setSettings, updateEmbedSettings } = useAppSettings();
   const { savedStates, updateSavedState, deleteSavedState, addSavedState, setCurrentID } = useSavedTimerStates();
 
   const remainingSeconds = time.seconds + time.minutes * 60 + time.hours * 3600;
 
+  useKeyboardShortcuts({ addSecondsToTimer, setSettings });
+
   useEffect(() => {
-    console.log('Timer state updated');
     updateSavedState(timerState, settings);
-  }, [timerState, settings]);
+  }, [timerState, settings, updateSavedState]);
 
   const processSetupFormSubmission = (
     links: string[],
@@ -33,9 +35,8 @@ const CountdownTimer = () => {
     embedFadeOutSec: number
   ) => {
     links = links.filter(link => link.trim() !== '');
-    const updatedSettings = updateEmbedSettings(links, linkSwitchDurationSec, embedFadeOutSec);
-    console.log('Updated settings:', updatedSettings);
-    addSavedState(timerState, updatedSettings);
+    updateEmbedSettings(links, linkSwitchDurationSec, embedFadeOutSec);
+    addSavedState(timerState, settings); // settings is not updated yet, but useEffect will update it
     setShowForm(false);
 
     try {
@@ -44,38 +45,6 @@ const CountdownTimer = () => {
       console.error('Failed to enter fullscreen mode:', error);
     }
   };
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey) {
-        switch (event.key.toLowerCase()) {
-          case 'q':
-            setSettings(prev => ({ ...prev, darkMode: !event.shiftKey }));
-            break;
-          case 'b':
-            setSettings(prev => ({ ...prev, fontSize: Math.max(1, prev.fontSize + (event.shiftKey ? 1 : -1)) }));
-            break;
-          case 'h':
-            addSecondsToTimer(event.shiftKey ? 3600 : -3600);
-            break;
-          case 'm':
-            addSecondsToTimer(event.shiftKey ? 60 : -60);
-            break;
-          case 's':
-            addSecondsToTimer(event.shiftKey ? 1 : -1);
-            break;
-          default:
-            break;
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [time]);
 
   useEffect(() => {
     const updateTimerHeight = () => {
@@ -128,12 +97,12 @@ const CountdownTimer = () => {
           </>
         )}
 
-        {!showForm && 
-            <ContentEmbed
-              remainingSeconds={remainingSeconds}
-              appSettings={settings}
-              timerHeight={timerHeight}
-            />
+        {!showForm &&
+          <ContentEmbed
+            remainingSeconds={remainingSeconds}
+            appSettings={settings}
+            timerHeight={timerHeight}
+          />
         }
       </div>
     </ThemeProvider>
