@@ -84,8 +84,7 @@ const CountdownTimer = () => {
             <SavedTimerStates
               savedStates={savedStates}
               onLoadState={(id) => {
-                const state = savedStates.find(state => state.id === id);
-                if (!state) throw new Error('State not found');
+                const state = savedStates.find(state => state.id === id)!;
                 setTimerState(state.timerState);
                 setSettings(state.appSettings);
                 setCurrentID(id);

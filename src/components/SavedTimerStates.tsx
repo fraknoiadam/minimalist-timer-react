@@ -27,9 +27,8 @@ export const SavedTimerStates: React.FC<SavedTimerStatesProps> = ({
 
   // Calculate current remaining time for a saved state
   const getCurrentRemainingTime = (state: SavedState) => {
-    return calculateRemainingTime(state.timerState).hours + 'h ' +
-            calculateRemainingTime(state.timerState).minutes + 'm ' +
-            calculateRemainingTime(state.timerState).seconds + 's';
+    const { hours, minutes, seconds } = calculateRemainingTime(state.timerState);
+    return `${hours}h ${minutes}m ${seconds}s`;
   };
 
   return (
