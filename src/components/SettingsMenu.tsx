@@ -1,6 +1,7 @@
 import { useState, Dispatch, SetStateAction } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Switch, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Switch, ToggleButtonGroup, ToggleButton, Tooltip, IconButton } from '@mui/material';
 import Settings from '@mui/icons-material/Settings';
+import InfoIcon from '@mui/icons-material/Info';
 import { DarkMode, LightMode } from '@mui/icons-material';
 import { AppSettings } from '../types/timer';
 
@@ -113,14 +114,21 @@ export const SettingsMenu = ({
 
           </div>
 
-          <div className="flex items-center justify-between">
-            <span>Prevent Sleep (Screen Wake Lock)</span>
+            <div className="flex items-center justify-between">
+            <span className="flex items-center">
+              Keep Screen Awake
+              <Tooltip title="Keeps your device's screen on while this tab is active. If you switch tabs or minimize the window, the screen will be allowed to sleep until you return.">
+              <IconButton size="medium" sx={{ ml: 1 }}>
+                <InfoIcon fontSize="medium" />
+              </IconButton>
+              </Tooltip>
+            </span>
             <Switch
-              checked={!!settings.wakeLockEnabled}
+              checked={settings.wakeLockEnabled}
               onChange={e => setSettings(prev => ({ ...prev, wakeLockEnabled: e.target.checked }))}
               color="primary"
             />
-          </div>
+            </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsModalOpen(false)}>Close</Button>
