@@ -11,6 +11,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { lightTheme, darkTheme } from './theme';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useScreenWakeLock } from './hooks/useScreenWakeLock';
 
 const CountdownTimer = () => {
   const [showForm, setShowForm] = useState(true);
@@ -24,6 +25,7 @@ const CountdownTimer = () => {
   const remainingSeconds = time.seconds + time.minutes * 60 + time.hours * 3600;
 
   useKeyboardShortcuts({ addSecondsToTimer, setSettings });
+  useScreenWakeLock(settings.wakeLockEnabled, setSettings);
 
   useEffect(() => {
     updateSavedState(timerState, settings);

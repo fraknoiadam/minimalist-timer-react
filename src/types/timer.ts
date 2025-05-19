@@ -30,6 +30,7 @@ export interface AppSettings {
   darkMode: boolean;
   fontSize: number;
   embedOverflow: boolean;
+  wakeLockEnabled: boolean;
   embedSettings?: EmbedSettings;
 }
 
