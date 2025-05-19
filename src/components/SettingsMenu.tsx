@@ -112,6 +112,15 @@ export const SettingsMenu = ({
             </div>
 
           </div>
+
+          <div className="flex items-center justify-between">
+            <span>Prevent Sleep (Screen Wake Lock)</span>
+            <Switch
+              checked={!!settings.wakeLockEnabled}
+              onChange={e => setSettings(prev => ({ ...prev, wakeLockEnabled: e.target.checked }))}
+              color="primary"
+            />
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsModalOpen(false)}>Close</Button>

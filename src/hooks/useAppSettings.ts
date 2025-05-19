@@ -4,13 +4,14 @@ import { AppSettings } from '../types/timer';
 const defaultSettings: AppSettings = {
   darkMode: true,
   fontSize: window.innerWidth < 768 ? 6 : 10,
-  embedOverflow: true
+  embedOverflow: true,
+  wakeLockEnabled: true
 };
 
 export const useAppSettings = () => {
   const [settings, setSettings] = useState<AppSettings>(() => {
     const saved = localStorage.getItem('durerSettings');
-    return saved ? JSON.parse(saved) : defaultSettings;
+    return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
   });
 
   const updateEmbedSettings = (
