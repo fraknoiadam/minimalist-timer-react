@@ -25,7 +25,7 @@ const CountdownTimer = () => {
   const remainingSeconds = time.seconds + time.minutes * 60 + time.hours * 3600;
 
   useKeyboardShortcuts({ addSecondsToTimer, setSettings });
-  useScreenWakeLock(settings.wakeLockEnabled);
+  useScreenWakeLock(settings.wakeLockEnabled, setSettings);
 
   useEffect(() => {
     updateSavedState(timerState, settings);
