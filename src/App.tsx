@@ -25,8 +25,21 @@ const CountdownTimer = () => {
 
   const remainingSeconds = time.seconds + time.minutes * 60 + time.hours * 3600;
 
+  const formatTimeForTitle = (hours: number, minutes: number, seconds: number): string => {
+    return `${hours > 0 ? `${hours}:` : ''}${hours > 0 ? String(minutes).padStart(2, '0') : minutes}:${String(seconds).padStart(2, '0')} - Timer`;
+  };
+
   useKeyboardShortcuts({ addSecondsToTimer, setSettings });
   useScreenWakeLock(settings.wakeLockEnabled, setSettings);
+
+  // Update document title with remaining time
+  useEffect(() => {
+    if (!showForm) {
+      document.title = formatTimeForTitle(time.hours, time.minutes, time.seconds);
+    } else {
+      document.title = 'Timer';
+    }
+  }, [time, showForm]);
 
   useEffect(() => {
     updateSavedState(timerState, settings);
