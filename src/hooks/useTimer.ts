@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useReducer } from 'react';
 import { TimeRemaining, TimerState } from '../types/timer';
 
-function calculateRemainingMs(timerState: TimerState): number {
+export function calculateRemainingMs(timerState: TimerState): number {
   if (timerState.startTime === null) {
     return timerState.totalMs;
   }

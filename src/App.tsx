@@ -29,7 +29,7 @@ const CountdownTimer = () => {
 
   useEffect(() => {
     updateSavedState(timerState, settings);
-  }, [timerState, settings, updateSavedState]);
+  }, [timerState, settings]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const processSetupFormSubmission = (
     links: string[],
