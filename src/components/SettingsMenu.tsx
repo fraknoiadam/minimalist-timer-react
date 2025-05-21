@@ -20,6 +20,7 @@ export const SettingsMenu = ({
 }: SettingsMenuProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
   return (
     <>
@@ -29,30 +30,29 @@ export const SettingsMenu = ({
         onMouseLeave={() => !isSetupMode && setIsHovered(false)}
       >
         <div
-          className={`absolute top-0 left-0 p-4 transition-transform duration-300 ease-in-out ${
-        isSetupMode || isHovered ? 'translate-y-0' : '-translate-y-full'
-          }`}
+          className={`absolute top-0 left-0 p-4 transition-transform duration-300 ease-in-out ${isSetupMode || isHovered ? 'translate-y-0' : '-translate-y-full'
+            }`}
           style={{ transitionDelay: isHovered ? '0ms' : '400ms' }}
         >
           <Button
-        onClick={() => setIsModalOpen(true)}
-        variant="contained"
-        color="primary"
+            onClick={() => setIsModalOpen(true)}
+            variant="contained"
+            color="primary"
           >
-        <Settings className="w-6 h-6" />
+            <Settings className="w-6 h-6" />
           </Button>
         </div>
       </div>
 
-      <Dialog 
-        open={isModalOpen} 
+      <Dialog
+        open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         fullWidth
         maxWidth="sm"
       >
         <DialogTitle>Settings</DialogTitle>
         <DialogContent className="space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <span>Theme</span>
             <ToggleButtonGroup
               value={settings.darkMode}
@@ -60,14 +60,14 @@ export const SettingsMenu = ({
               onChange={(_, value) => value !== null && setSettings(prev => ({ ...prev, darkMode: value }))}
               size="small"
             >
-                <ToggleButton value={false} className="px-8 py-8">
+              <ToggleButton value={false} className="px-8 py-8">
                 <LightMode /> Light
-                </ToggleButton>
-                <ToggleButton value={true} className="px-4 py-2">
+              </ToggleButton>
+              <ToggleButton value={true} className="px-4 py-2">
                 <DarkMode /> Dark
-                </ToggleButton>
+              </ToggleButton>
             </ToggleButtonGroup>
-            </div>
+          </div>
 
           <div className="flex items-center justify-between">
             <span>Font Size</span>
@@ -85,13 +85,13 @@ export const SettingsMenu = ({
                 +
               </Button>
             </div>
-            </div>
+          </div>
 
           <div className="flex items-center justify-between">
             <span>Embedding overflow</span>
             <Switch
               checked={settings.embedOverflow}
-              onChange={(e) => setSettings(prev => ({ ...prev, embedOverflow: e.target.checked}))}
+              onChange={(e) => setSettings(prev => ({ ...prev, embedOverflow: e.target.checked }))}
               color="primary"
             />
           </div>
@@ -111,16 +111,24 @@ export const SettingsMenu = ({
               <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(600)}>+10m</Button>
               <Button variant="outlined" size="small" onClick={() => addSecondsToTimer(3600)}>+1h</Button>
             </div>
-
           </div>
 
-            <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <span className="flex items-center">
               Keep Screen Awake
-              <Tooltip title="Keeps your device's screen on while this tab is active. If you switch tabs or minimize the window, the screen will be allowed to sleep until you return.">
-              <IconButton size="medium" sx={{ ml: 1 }}>
-                <InfoIcon fontSize="medium" />
-              </IconButton>
+              <Tooltip
+                title="Keeps your device's screen on while this tab is active. If you switch tabs or minimize the window, the screen will be allowed to sleep until you return."
+                open={isTooltipOpen}
+                onOpen={() => setIsTooltipOpen(true)}
+                onClose={() => setIsTooltipOpen(false)}
+              >
+                <IconButton
+                  size="medium"
+                  sx={{ ml: 1 }}
+                  onClick={() => setIsTooltipOpen(o => !o)}
+                >
+                  <InfoIcon fontSize="medium" />
+                </IconButton>
               </Tooltip>
             </span>
             <Switch
@@ -128,7 +136,7 @@ export const SettingsMenu = ({
               onChange={e => setSettings(prev => ({ ...prev, wakeLockEnabled: e.target.checked }))}
               color="primary"
             />
-            </div>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsModalOpen(false)}>Close</Button>
