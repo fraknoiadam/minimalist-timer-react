@@ -12,6 +12,7 @@ import { lightTheme, darkTheme } from './theme';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useScreenWakeLock } from './hooks/useScreenWakeLock';
+import Box from '@mui/material/Box';
 
 const CountdownTimer = () => {
   const [showForm, setShowForm] = useState(true);
@@ -82,20 +83,45 @@ const CountdownTimer = () => {
         </div>
 
         {showForm && (
-          <>
-            <SavedTimerStates
-              savedStates={savedStates}
-              onLoadState={(id) => {
-                const state = savedStates.find(state => state.id === id)!;
-                setTimerState(state.timerState);
-                setSettings(state.appSettings);
-                setCurrentID(id);
-                setShowForm(false);
+          <Box sx={{ width: '100%', p: 2, mt: 2, position: 'relative' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                alignItems: { xs: 'stretch', md: 'flex-start' },
+                gap: 3,
+                width: '100%',
               }}
-              onDeleteState={deleteSavedState}
-            />
-            <TimerSetupForm onStart={processSetupFormSubmission} />
-          </>
+            >
+              <Box sx={{ width: { xs: '100%', md: 250 }, flexShrink: 0, mb: { xs: 2, md: 0 } }}>
+                <SavedTimerStates
+                  savedStates={savedStates}
+                  onLoadState={(id) => {
+                    const state = savedStates.find(state => state.id === id)!;
+                    setTimerState(state.timerState);
+                    setSettings(state.appSettings);
+                    setCurrentID(id);
+                    setShowForm(false);
+                  }}
+                  onDeleteState={deleteSavedState}
+                />
+              </Box>
+              <Box
+                sx={{
+                  position: { md: 'absolute' },
+                  // If screen width >= 850px, change left offset.
+                  // Since 'md' breakpoint (900px) is >= 850px, this applies to all 'md' screens.
+                  left: { md: '50%' },
+                  transform: { md: 'translateX(-50%)' },
+                  width: '100%',
+                  maxWidth: 600,
+                  mx: 'auto'
+                }}
+              >
+                <TimerSetupForm onStart={processSetupFormSubmission} />
+              </Box>
+            </Box>
+          </Box>
         )}
 
         {!showForm &&

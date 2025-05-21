@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Box, Typography, Tooltip } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import { Box, Typography, List, ListItem, ListItemText, IconButton, Paper, Tooltip } from '@mui/material';
 import { SavedState } from '../types/timer';
 import { formatDistance } from 'date-fns';
 import { calculateRemainingTime } from '../hooks/useTimer';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { SettingsBackupRestore } from '@mui/icons-material';
 
 interface SavedTimerStatesProps {
   savedStates: SavedState[];
@@ -25,74 +26,93 @@ export const SavedTimerStates: React.FC<SavedTimerStatesProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  // Calculate current remaining time for a saved state
   const getCurrentRemainingTime = (state: SavedState) => {
     const { hours, minutes, seconds } = calculateRemainingTime(state.timerState);
     return `${hours}h ${minutes}m ${seconds}s`;
   };
 
   return (
-    <Box sx={{ mt: 2, p: 2 }}>
-      {savedStates.length !== 0 && (<>
-        <Box sx={{ mb: 2 }}>
-            <Typography variant="h5">Recently used</Typography>
-        </Box>
-        <Grid container spacing={2}>
-          {savedStates.map((state) => (
-            <Grid size={{ md: 1.5 }} key={state.id}>
-              <Card sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' } }>
-                <Typography variant="body1" sx={{ mb: 0.5 }}>
-                  Remaining: {getCurrentRemainingTime(state)}
-                </Typography>
-                {state.appSettings.embedSettings?.links && state.appSettings.embedSettings.links.length > 0 && (
-                  <Tooltip
-                    title={
-                      <Box>
-                        {state.appSettings.embedSettings.links.map((link, index) => (
-                          <Typography key={index} variant="caption" display="block">
-                            {link}
-                          </Typography>
-                        ))}
-                      </Box>
-                    }
-                    arrow
-                  >
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, cursor: 'pointer' }}>
-                      Links: {state.appSettings.embedSettings.links.length}
-                    </Typography>
-                  </Tooltip>
-                )}
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary" 
-                  sx={{ mb: 2 }}
-                  title={new Date(state.savedAt).toLocaleString()}
+    <Box sx={{ p: 1, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}> 
+      {savedStates.length > 0 && (
+        <>
+          <Typography variant="h6" sx={{ mb: 1.5, textAlign: 'center', fontSize: '1.1rem' }}>
+            Recently Used Timers
+          </Typography>
+          <List sx={{ maxHeight: 400, overflowY: 'auto' }}>
+            {savedStates.map((state) => (
+              <Paper elevation={0} sx={{ mb: 1, borderRadius: 1, border: '1px solid', borderColor: 'divider' }} key={state.id}>
+                <ListItem
+                  disablePadding
+                  secondaryAction={
+                    <>
+                      <Tooltip title="Load Timer">
+                        <IconButton size="small" edge="end" aria-label="load" onClick={() => onLoadState(state.id)} color="primary" sx={{ mr: 0.5 }}>
+                          <SettingsBackupRestore fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Timer">
+                        <IconButton size="small" edge="end" aria-label="delete" onClick={() => onDeleteState(state.id)} color="error">
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </>
+                  }
                 >
-                  Created {formatDistance(state.savedAt, currentTime, { addSuffix: true })}
-                </Typography>
-
-                <Box sx={{ flexGrow: 1 }} /> {/* This flex spacer pushes buttons to bottom */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Button 
-                    variant="contained" 
-                    color="primary"
-                    onClick={() => onLoadState(state.id)}
-                  >
-                    Load
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    color="error"
-                    onClick={() => onDeleteState(state.id)}
-                  >
-                    Delete
-                  </Button>
-                </Box>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </>)}
+                  <ListItemText
+                    sx={{ pl: 1.5, pr: 8 }}
+                    primary={
+                      <Typography variant="subtitle2" component="div">
+                        {`Time: ${getCurrentRemainingTime(state)}`}
+                      </Typography>
+                    }
+                    secondary={
+                      <>
+                        <Typography
+                          component="span"
+                          variant="caption"
+                          color="text.secondary"
+                          display="block"
+                          title={new Date(state.savedAt).toLocaleString()}
+                        >
+                          {formatDistance(state.savedAt, currentTime, { addSuffix: true })}
+                        </Typography>
+                        {state.appSettings.embedSettings?.links && state.appSettings.embedSettings.links.length > 0 && (
+                          <Tooltip
+                            title={
+                              <Box>
+                                {state.appSettings.embedSettings.links.map((link, index) => (
+                                  <Typography key={index} variant="caption" display="block">
+                                    {link || 'Empty link'}
+                                  </Typography>
+                                ))}
+                              </Box>
+                            }
+                            arrow
+                          >
+                            <Typography component="span" variant="caption" display="block" sx={{ cursor: 'pointer', mt: 0.25, color: 'primary.main' }}>
+                              {`Links: ${state.appSettings.embedSettings.links.length}`}
+                            </Typography>
+                          </Tooltip>
+                        )}
+                      </>
+                    }
+                  />
+                </ListItem>
+              </Paper>
+            ))}
+          </List>
+        </>
+      )}
+      {savedStates.length === 0 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p:2, minHeight: 150 }}>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1 }}>
+            No Saved Timers
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+            Setup a new timer and it will appear here.
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 };
