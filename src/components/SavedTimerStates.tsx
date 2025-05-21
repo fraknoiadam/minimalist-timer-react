@@ -45,7 +45,7 @@ export const SavedTimerStates: React.FC<SavedTimerStatesProps> = ({
                   disablePadding
                   secondaryAction={
                     <>
-                      <Tooltip title="Load Timer">
+                      <Tooltip title="Restore Timer">
                         <IconButton size="small" edge="end" aria-label="load" onClick={() => onLoadState(state.id)} color="primary" sx={{ mr: 0.5 }}>
                           <SettingsBackupRestore fontSize="small" />
                         </IconButton>
