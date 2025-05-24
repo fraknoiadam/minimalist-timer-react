@@ -11,9 +11,8 @@ const savedStatesInLocalStorage = (): SavedState[] => {
         return [];
       }
       const tenMinutesInMs = 10 * 60 * 1000;
-      console.log(parsed);
       const statesToKeep = parsed.filter(state => state.timerState && calculateRemainingMs(state.timerState) >= -tenMinutesInMs);
-      
+
       // If the number of states to keep is less than the original number of states, update localStorage.
       if (statesToKeep.length < parsed.length) {
         localStorage.setItem('durerTimerSavedStates', JSON.stringify(statesToKeep));
@@ -39,14 +38,13 @@ export const useSavedTimerStates = () => {
     if (!currentID) {
       return;
     }
-    const updatedStates = savedStates.map(state => {
-      if (state.id === currentID) {
-        return { ...state, timerState: newTimerState, appSettings: newAppSettings };
-      }
-      return state;
-    }
+    setSavedStates(prevSavedStates =>
+      prevSavedStates.map(state =>
+        state.id === currentID
+          ? { ...state, timerState: newTimerState, appSettings: newAppSettings }
+          : state
+      )
     );
-    setSavedStates(updatedStates);
   };
 
   const addSavedState = (newTimerState: TimerState, newAppSettings: AppSettings, name: string = "") => {
@@ -62,9 +60,10 @@ export const useSavedTimerStates = () => {
   }
 
   const deleteSavedState = (id: string) => {
-    const updatedStates = savedStates.filter(state => state.id !== id);
-    setSavedStates(updatedStates);
-    localStorage.setItem('durerTimerSavedStates', JSON.stringify(updatedStates));
+    if (currentID !== null) {
+      throw new Error("Cannot delete saved state when there is an active ID.");
+    }
+    setSavedStates(prevSavedStates => prevSavedStates.filter(state => state.id !== id));
   };
 
   return {
