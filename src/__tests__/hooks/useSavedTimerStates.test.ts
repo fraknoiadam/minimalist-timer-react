@@ -1,81 +1,79 @@
 import { pruneExpiredSavedStates } from '../../hooks/useSavedTimerStates';
-import * as useTimerModule from '../../hooks/useTimer';
-import { SavedState } from '../../types/timer';
+import { SavedState, TimerState, AppSettings } from '../../types/timer';
 
-// Mock the calculateRemainingMs function from useTimer.ts
-jest.mock('../../hooks/useTimer', () => ({
-  ...jest.requireActual('../../hooks/useTimer'),
-  calculateRemainingMs: jest.fn(),
-}));
+// Base objects for test data
+const createBaseAppSettings = (): AppSettings => ({
+  darkMode: true, 
+  fontSize: 48, 
+  embedOverflow: false, 
+  wakeLockEnabled: false
+});
+
+const createBaseTimerState = (overrides: Partial<TimerState> = {}): TimerState => ({
+  totalMs: 60000, // Default 1 minute
+  paused: false,
+  startTime: Date.now(),
+  pauseStart: 0,
+  totalPauseMs: 0,
+  ...overrides
+});
+
+const createSavedState = (overrides: Partial<SavedState> = {}): SavedState => {
+  const now = Date.now();
+  return {
+    id: '1',
+    name: 'Test state',
+    savedAt: undefined,
+    timerState: createBaseTimerState(),
+    appSettings: createBaseAppSettings(),
+    ...overrides
+  };
+};
 
 describe('pruneExpiredSavedStates', () => {
-  // Store the original implementation
-  const originalCalculateRemainingMs = jest.requireActual('../../hooks/useTimer').calculateRemainingMs;
-  
-  // Reset mocks before each test
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  afterAll(() => {
-    // Restore the original implementation if needed
-    jest.restoreAllMocks();
-  });
-
-  it('should filter out null or undefined input', () => {
+  it('should filter out invalid inputs', () => {
     expect(pruneExpiredSavedStates(null as any)).toEqual([]);
     expect(pruneExpiredSavedStates(undefined as any)).toEqual([]);
-  });
-
-  it('should return empty array for non-array input', () => {
     expect(pruneExpiredSavedStates({} as any)).toEqual([]);
     expect(pruneExpiredSavedStates('not an array' as any)).toEqual([]);
-  });
-
-  it('should filter out states with missing timerState', () => {
-    const states = [
-      { id: '1', name: 'Valid', savedAt: Date.now(), timerState: null, appSettings: {} } as any,
-      { id: '2', name: 'Valid2', savedAt: Date.now(), appSettings: {} } as any,
+    const states: any = [
+      { id: '1', name: 'Valid', savedAt: Date.now(), timerState: null, appSettings: {} },
+      { id: '2', name: 'Valid2', savedAt: Date.now(), appSettings: {} },
     ];
-
-    const result = pruneExpiredSavedStates(states);
-    expect(result).toEqual([]);
+    expect(pruneExpiredSavedStates(states)).toEqual([]);
   });
 
   it('should keep states with remaining time above -10 minutes', () => {
-    const mockCalculateRemainingMs = useTimerModule.calculateRemainingMs as jest.Mock;
-
-    // Create test data
     const now = Date.now();
+    
     const states: SavedState[] = [
-      {
+      // An active timer with 30 seconds remaining - should keep
+      createSavedState({
         id: '1',
         name: 'Recent state',
-        savedAt: now,
-        timerState: { totalMs: 60000, paused: true, startTime: now, pauseStart: now, totalPauseMs: 0 },
-        appSettings: { darkMode: true, fontSize: 48, embedOverflow: false, wakeLockEnabled: false }
-      },
-      {
+        timerState: createBaseTimerState({
+          startTime: now - 30000 // 30 seconds ago
+        })
+      }),
+      
+      // A timer that expired 11+epsilon minutes ago - should prune
+      createSavedState({
         id: '2',
         name: 'Expired state',
-        savedAt: now - 1000 * 60 * 15, // 15 minutes old
-        timerState: { totalMs: 60000, paused: true, startTime: now - 1000 * 60 * 15, pauseStart: now, totalPauseMs: 0 },
-        appSettings: { darkMode: true, fontSize: 48, embedOverflow: false, wakeLockEnabled: false }
-      },
-      {
-        id: '3', 
-        name: 'Almost expired state', 
-        savedAt: now,
-        timerState: { totalMs: 60000, paused: true, startTime: now, pauseStart: now, totalPauseMs: 0 },
-        appSettings: { darkMode: true, fontSize: 48, embedOverflow: false, wakeLockEnabled: false }
-      }
+        timerState: createBaseTimerState({
+          startTime: now - 1000 * 60 * 11.001
+        })
+      }),
+      
+      // A timer that expired 9.5 minutes ago - should keep (within 10 min limit)
+      createSavedState({
+        id: '3',
+        name: 'Almost expired state',
+        timerState: createBaseTimerState({
+          startTime: now - 1000 * 60 * 10.99
+        })
+      })
     ];
-
-    // Mock the return values for each state
-    mockCalculateRemainingMs
-      .mockReturnValueOnce(30000) // For state 1: 30 seconds remaining - should keep
-      .mockReturnValueOnce(-1000 * 60 * 11) // For state 2: -11 minutes - should prune
-      .mockReturnValueOnce(-1000 * 60 * 9); // For state 3: -9 minutes - should keep (within 10 min limit)
 
     const result = pruneExpiredSavedStates(states);
     
@@ -83,52 +81,33 @@ describe('pruneExpiredSavedStates', () => {
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe('1');
     expect(result[1].id).toBe('3');
-
-    // Verify calculateRemainingMs was called with the correct timer states
-    expect(mockCalculateRemainingMs).toHaveBeenCalledTimes(3);
-    expect(mockCalculateRemainingMs).toHaveBeenCalledWith(states[0].timerState);
-    expect(mockCalculateRemainingMs).toHaveBeenCalledWith(states[1].timerState);
-    expect(mockCalculateRemainingMs).toHaveBeenCalledWith(states[2].timerState);
   });
 
-  it('should work with the real calculateRemainingMs implementation', () => {
-    // Restore the original implementation for this test
-    (useTimerModule.calculateRemainingMs as jest.Mock).mockImplementation(originalCalculateRemainingMs);
-    
+  it('should handle active timers with time remaining', () => {
     const now = Date.now();
     const fiveMinutesAgo = now - 5 * 60 * 1000;
     const twentyMinutesAgo = now - 20 * 60 * 1000;
     
     const states: SavedState[] = [
       // A timer that started 20 minutes ago with 5 minutes duration - should be pruned
-      // This is more than 10 minutes past expiration
-      {
+      createSavedState({
         id: '1',
         name: 'Expired timer',
-        savedAt: twentyMinutesAgo,
-        timerState: { 
+        timerState: createBaseTimerState({
           totalMs: 5 * 60 * 1000, // 5 minutes
-          paused: false, 
-          startTime: twentyMinutesAgo, 
-          pauseStart: 0, 
-          totalPauseMs: 0 
-        },
-        appSettings: { darkMode: true, fontSize: 48, embedOverflow: false, wakeLockEnabled: false }
-      },
+          startTime: twentyMinutesAgo
+        })
+      }),
+      
       // A timer that started 5 minutes ago with 20 minutes duration - should be kept
-      {
+      createSavedState({
         id: '2',
         name: 'Active timer',
-        savedAt: fiveMinutesAgo,
-        timerState: { 
+        timerState: createBaseTimerState({
           totalMs: 20 * 60 * 1000, // 20 minutes
-          paused: false, 
-          startTime: fiveMinutesAgo, 
-          pauseStart: 0, 
-          totalPauseMs: 0 
-        },
-        appSettings: { darkMode: true, fontSize: 48, embedOverflow: false, wakeLockEnabled: false }
-      }
+          startTime: fiveMinutesAgo
+        })
+      })
     ];
 
     const result = pruneExpiredSavedStates(states);
@@ -139,19 +118,18 @@ describe('pruneExpiredSavedStates', () => {
   });
 
   it('should handle edge case with exactly -10 minutes remaining', () => {
-    const mockCalculateRemainingMs = useTimerModule.calculateRemainingMs as jest.Mock;
-    
     const now = Date.now();
-    const states: SavedState[] = [{
-      id: '1',
-      name: 'Borderline state',
-      savedAt: now,
-      timerState: { totalMs: 60000, paused: true, startTime: now, pauseStart: now, totalPauseMs: 0 },
-      appSettings: { darkMode: true, fontSize: 48, embedOverflow: false, wakeLockEnabled: false }
-    }];
+    const tenMinutesAgo = now - 10 * 60 * 1000;
     
-    // Mock the return value to be exactly -10 minutes
-    mockCalculateRemainingMs.mockReturnValueOnce(-10 * 60 * 1000);
+    const states: SavedState[] = [
+      createSavedState({
+        id: '1',
+        name: 'Borderline state',
+        timerState: createBaseTimerState({
+          startTime: tenMinutesAgo - 60000 // Started 11 minutes ago
+        })
+      })
+    ];
     
     const result = pruneExpiredSavedStates(states);
     
@@ -159,20 +137,20 @@ describe('pruneExpiredSavedStates', () => {
     expect(result).toHaveLength(1);
   });
   
-  it('should handle edge case with exactly -10 minutes and 1ms remaining', () => {
-    const mockCalculateRemainingMs = useTimerModule.calculateRemainingMs as jest.Mock;
-    
+  it('should handle edge case with slightly more than -10 minutes remaining', () => {
     const now = Date.now();
-    const states: SavedState[] = [{
-      id: '1',
-      name: 'Just beyond threshold',
-      savedAt: now,
-      timerState: { totalMs: 60000, paused: true, startTime: now, pauseStart: now, totalPauseMs: 0 },
-      appSettings: { darkMode: true, fontSize: 48, embedOverflow: false, wakeLockEnabled: false }
-    }];
+    const tenMinutesAndOneSecondAgo = now - (10 * 60 * 1000 + 1000);
     
-    // Mock the return value to be just beyond the threshold
-    mockCalculateRemainingMs.mockReturnValueOnce(-10 * 60 * 1000 - 1);
+    const states: SavedState[] = [
+      createSavedState({
+        id: '1',
+        name: 'Just beyond threshold',
+        timerState: createBaseTimerState({
+          totalMs: 0, // Immediate expiration
+          startTime: tenMinutesAndOneSecondAgo
+        })
+      })
+    ];
     
     const result = pruneExpiredSavedStates(states);
     
@@ -181,26 +159,24 @@ describe('pruneExpiredSavedStates', () => {
   });
 
   it('should handle paused timers correctly', () => {
-    (useTimerModule.calculateRemainingMs as jest.Mock).mockImplementation(originalCalculateRemainingMs);
-    
     const now = Date.now();
     const fifteenMinutesAgo = now - 15 * 60 * 1000;
+    const tenMinutesAgo = now - 10 * 60 * 1000;
     
     // A timer that started 15 minutes ago, ran for 5 minutes, then was paused 10 minutes ago
     // Still has 5 minutes remaining on the timer
-    const states: SavedState[] = [{
-      id: '1',
-      name: 'Paused timer with time left',
-      savedAt: fifteenMinutesAgo,
-      timerState: { 
-        totalMs: 10 * 60 * 1000, // 10 minutes total
-        paused: true,
-        startTime: fifteenMinutesAgo, 
-        pauseStart: now - 10 * 60 * 1000, // Paused 10 minutes ago
-        totalPauseMs: 0
-      },
-      appSettings: { darkMode: true, fontSize: 48, embedOverflow: false, wakeLockEnabled: false }
-    }];
+    const states: SavedState[] = [
+      createSavedState({
+        id: '1',
+        name: 'Paused timer with time left',
+        timerState: createBaseTimerState({ 
+          totalMs: 10 * 60 * 1000, // 10 minutes total
+          paused: true,
+          startTime: fifteenMinutesAgo, 
+          pauseStart: tenMinutesAgo // Paused 10 minutes ago
+        })
+      })
+    ];
     
     const result = pruneExpiredSavedStates(states);
     
