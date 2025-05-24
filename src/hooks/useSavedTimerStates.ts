@@ -65,7 +65,7 @@ export const useSavedTimerStates = () => {
 
   const deleteSavedState = (id: string) => {
     if (currentID !== null) {
-      throw new Error("Cannot delete saved state when there is an active ID.");
+      console.error("Cannot delete saved state when there is an active ID.");
     }
     setSavedStates(prevSavedStates => prevSavedStates.filter(state => state.id !== id));
   };
