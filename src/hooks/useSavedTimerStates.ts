@@ -1,12 +1,27 @@
 import { useState, useEffect } from 'react';
 import { AppSettings, SavedState, TimerState } from '../types/timer';
+import { calculateRemainingMs } from './useTimer';
+
+export const pruneExpiredSavedStates = (states: SavedState[]): SavedState[] => {
+  if (!Array.isArray(states)) {
+    return [];
+  }
+  const tenMinutesInMs = 10 * 60 * 1000;
+  return states.filter(state => state.timerState && calculateRemainingMs(state.timerState) >= -tenMinutesInMs);
+};
 
 const savedStatesInLocalStorage = (): SavedState[] => {
   const savedTimersJson = localStorage.getItem('durerTimerSavedStates');
   if (savedTimersJson) {
     try {
       const parsed = JSON.parse(savedTimersJson);
-      return Array.isArray(parsed) ? parsed : [];
+      const prunedStates = pruneExpiredSavedStates(parsed);
+      
+      // If the number of states to keep is less than the original number of states, update localStorage.
+      if (prunedStates.length < parsed.length) {
+        localStorage.setItem('durerTimerSavedStates', JSON.stringify(prunedStates));
+      }
+      return prunedStates;
     } catch (e) {
       console.error('Failed to parse saved timer states:', e);
       return [];
@@ -27,14 +42,13 @@ export const useSavedTimerStates = () => {
     if (!currentID) {
       return;
     }
-    const updatedStates = savedStates.map(state => {
-      if (state.id === currentID) {
-        return { ...state, timerState: newTimerState, appSettings: newAppSettings };
-      }
-      return state;
-    }
+    setSavedStates(prevSavedStates =>
+      prevSavedStates.map(state =>
+        state.id === currentID
+          ? { ...state, timerState: newTimerState, appSettings: newAppSettings }
+          : state
+      )
     );
-    setSavedStates(updatedStates);
   };
 
   const addSavedState = (newTimerState: TimerState, newAppSettings: AppSettings, name: string = "") => {
@@ -50,9 +64,10 @@ export const useSavedTimerStates = () => {
   }
 
   const deleteSavedState = (id: string) => {
-    const updatedStates = savedStates.filter(state => state.id !== id);
-    setSavedStates(updatedStates);
-    localStorage.setItem('durerTimerSavedStates', JSON.stringify(updatedStates));
+    if (currentID !== null) {
+      console.error("Cannot delete saved state when there is an active ID.");
+    }
+    setSavedStates(prevSavedStates => prevSavedStates.filter(state => state.id !== id));
   };
 
   return {
