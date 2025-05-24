@@ -2,22 +2,26 @@ import { useState, useEffect } from 'react';
 import { AppSettings, SavedState, TimerState } from '../types/timer';
 import { calculateRemainingMs } from './useTimer';
 
+export const pruneExpiredSavedStates = (states: SavedState[]): SavedState[] => {
+  if (!Array.isArray(states)) {
+    return [];
+  }
+  const tenMinutesInMs = 10 * 60 * 1000;
+  return states.filter(state => state.timerState && calculateRemainingMs(state.timerState) >= -tenMinutesInMs);
+};
+
 const savedStatesInLocalStorage = (): SavedState[] => {
   const savedTimersJson = localStorage.getItem('durerTimerSavedStates');
   if (savedTimersJson) {
     try {
       const parsed = JSON.parse(savedTimersJson);
-      if (!Array.isArray(parsed)) {
-        return [];
-      }
-      const tenMinutesInMs = 10 * 60 * 1000;
-      const statesToKeep = parsed.filter(state => state.timerState && calculateRemainingMs(state.timerState) >= -tenMinutesInMs);
-
+      const prunedStates = pruneExpiredSavedStates(parsed);
+      
       // If the number of states to keep is less than the original number of states, update localStorage.
-      if (statesToKeep.length < parsed.length) {
-        localStorage.setItem('durerTimerSavedStates', JSON.stringify(statesToKeep));
+      if (prunedStates.length < parsed.length) {
+        localStorage.setItem('durerTimerSavedStates', JSON.stringify(prunedStates));
       }
-      return statesToKeep;
+      return prunedStates;
     } catch (e) {
       console.error('Failed to parse saved timer states:', e);
       return [];
