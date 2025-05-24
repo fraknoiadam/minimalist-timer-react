@@ -13,6 +13,8 @@ A minimalistic timer application built with React and TypeScript.
 ## Getting Started
 
 ```bash
+cd frontend
+
 # Install dependencies
 npm install
 
