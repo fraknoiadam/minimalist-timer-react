@@ -4,6 +4,7 @@ import { SettingsMenu } from './components/SettingsMenu';
 import { TimerSetupForm } from './components/TimerSetupForm';
 import { ContentEmbed } from './components/ContentEmbed';
 import { SavedTimerStates } from './components/SavedTimerStates';
+import { TimerCodeInput } from './components/TimerCodeInput';
 import { useTimer } from './hooks/useTimer';
 import { useSavedTimerStates } from './hooks/useSavedTimerStates';
 import { ThemeProvider } from '@mui/material/styles';
@@ -131,6 +132,18 @@ const CountdownTimer = () => {
                   mx: 'auto'
                 }}
               >
+                <Box sx={{ mb: 2 }}>
+                  <TimerCodeInput 
+                    onLoadState={(state) => {
+                      setTimerState(state.timerState);
+                      setSettings(state.appSettings);
+                      if (state.id) {
+                        setCurrentID(state.id);
+                      }
+                      setShowForm(false);
+                    }} 
+                  />
+                </Box>
                 <TimerSetupForm onStart={processSetupFormSubmission} />
               </Box>
             </Box>
