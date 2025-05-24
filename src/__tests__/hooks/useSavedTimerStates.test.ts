@@ -19,11 +19,10 @@ const createBaseTimerState = (overrides: Partial<TimerState> = {}): TimerState =
 });
 
 const createSavedState = (overrides: Partial<SavedState> = {}): SavedState => {
-  const now = Date.now();
   return {
     id: '1',
     name: 'Test state',
-    savedAt: undefined,
+    savedAt: Date.now(),
     timerState: createBaseTimerState(),
     appSettings: createBaseAppSettings(),
     ...overrides
