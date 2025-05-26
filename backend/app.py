@@ -124,25 +124,5 @@ async def update_timer_state(timer_id: str, timer_data: Dict[str, Any], db: Sess
             detail=f"Error updating timer state: {str(e)}"
         )
 
-@app.get("/debug/example", tags=["Debug"])
-async def debug_example():
-    """
-    Example endpoint for testing debugger.
-    Set a breakpoint on any line in this function to test debugging.
-    """
-    # Set a breakpoint on the next line
-    test_value = 100
-    
-    # Try stepping through these calculations
-    test_value = test_value * 2
-    result = {
-        "message": "This is a debug endpoint",
-        "calculated_value": test_value,
-        "current_time": datetime.utcnow().isoformat()
-    }
-    
-    # Check the 'result' variable in the debugger
-    return result
-
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=5000, reload=True)
