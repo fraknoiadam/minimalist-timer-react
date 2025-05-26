@@ -1,6 +1,7 @@
 import { useState, Dispatch, SetStateAction } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Switch, ToggleButtonGroup, ToggleButton, Tooltip, IconButton } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Switch, ToggleButtonGroup, ToggleButton, Tooltip, IconButton, Box } from '@mui/material';
 import Settings from '@mui/icons-material/Settings';
+import ShareIcon from '@mui/icons-material/Share';
 import InfoIcon from '@mui/icons-material/Info';
 import { DarkMode, LightMode } from '@mui/icons-material';
 import { AppSettings } from '../types/timer';
@@ -9,14 +10,16 @@ interface SettingsMenuProps {
   settings: AppSettings;
   setSettings: Dispatch<SetStateAction<AppSettings>>;
   addSecondsToTimer: (seconds: number) => void;
-  isSetupMode: boolean;  // Add this prop
+  isSetupMode: boolean;
+  onShareClick?: () => void; // Callback for when the share button is clicked
 }
 
 export const SettingsMenu = ({
   settings,
   setSettings,
   addSecondsToTimer,
-  isSetupMode
+  isSetupMode,
+  onShareClick
 }: SettingsMenuProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,6 +47,7 @@ export const SettingsMenu = ({
         </div>
       </div>
 
+      {/* Settings Dialog */}
       <Dialog
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -138,7 +142,18 @@ export const SettingsMenu = ({
             />
           </div>
         </DialogContent>
-        <DialogActions>
+        
+        <DialogActions sx={{ justifyContent: 'space-between', padding: 2 }}>
+          {!isSetupMode && onShareClick && (
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<ShareIcon />}
+              onClick={onShareClick}
+            >
+              Share
+            </Button>
+          )}
           <Button onClick={() => setIsModalOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>

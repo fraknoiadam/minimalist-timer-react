@@ -105,5 +105,6 @@ export const useSavedTimerStates = () => {
     deleteSavedState,
     addSavedState,
     setCurrentID,
+    currentID
   };
 };
