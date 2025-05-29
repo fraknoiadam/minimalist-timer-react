@@ -9,7 +9,7 @@ This document explains how to use the VS Code debugging configurations for Durer
 Runs and debugs only the FastAPI backend server.
 
 - **How to use:** From the Run and Debug panel in VS Code, select "FastAPI Backend" and press F5 or click the green play button.
-- **What it does:** Starts the FastAPI server with hot-reloading enabled at http://localhost:5000.
+- **What it does:** Starts the FastAPI server with hot-reloading enabled at http://localhost:8000.
 
 ### 2. Vite Frontend
 
@@ -50,8 +50,8 @@ Runs and debugs both the backend and frontend simultaneously.
 
 When the debugger is running:
 
-- **Backend API:** http://localhost:5000
-- **API Documentation:** http://localhost:5000/docs
+- **Backend API:** http://localhost:8000
+- **API Documentation:** http://localhost:8000/docs
 - **Frontend:** http://localhost:5173
 
 ## Stopping the Debug Session

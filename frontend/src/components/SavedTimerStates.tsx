@@ -1,4 +1,3 @@
-// filepath: /home/adam/ago/durer-timer/frontend/src/components/SavedTimerStates.tsx
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, List, ListItem, ListItemText, IconButton, Paper, Tooltip } from '@mui/material';
 import { SavedState } from '../types/timer';

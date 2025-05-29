@@ -41,7 +41,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # Run the FastAPI app
-python -m uvicorn app:app --reload --port 5000
+python -m uvicorn app:app --reload --port 8000
 ```
 
 ### Setting Up the Frontend

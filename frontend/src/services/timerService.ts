@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { SavedState } from '../types/timer';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:8000/api';
 
 export const timerService = {
   async getTimerState(id: string): Promise<SavedState | null> {

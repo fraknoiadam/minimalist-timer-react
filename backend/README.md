@@ -29,7 +29,7 @@ This is the FastAPI backend for the Durer Timer application. It provides API end
 
 4. Run the server:
    ```bash
-   python -m uvicorn app:app --reload --port 5000
+   python -m uvicorn app:app --reload --port 8000
    ```
 
 ## API Endpoints
@@ -85,5 +85,5 @@ Same as GET endpoint.
 
 After running the server, you can access:
 
-- Swagger UI: http://localhost:5000/docs
-- ReDoc: http://localhost:5000/redoc
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
