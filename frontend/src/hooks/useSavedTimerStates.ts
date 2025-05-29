@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AppSettings, SavedState, TimerState } from '../types/timer';
 import { calculateRemainingMs } from './useTimer';
-import { timerService } from '../services/timerService';
 
 export const pruneExpiredSavedStates = (states: SavedState[]): SavedState[] => {
   if (!Array.isArray(states)) {
@@ -52,24 +51,7 @@ export const useSavedTimerStates = () => {
           : state
       )
     );
-    
-    // If we have a current ID, also update on the backend
-    try {
-      const stateToUpdate = savedStates.find(state => state.id === currentID);
-      if (stateToUpdate) {
-        const updatedState = {
-          ...stateToUpdate,
-          timerState: newTimerState,
-          appSettings: newAppSettings
-        };
-        
-        // Try to save to backend
-        await timerService.saveTimerState(updatedState);
-      }
-    } catch (error) {
-      console.error('Failed to update timer state on server:', error);
-    }
-  };
+};
 
   const addSavedState = async (newTimerState: TimerState, newAppSettings: AppSettings, name: string = "") => {
     const newSavedState: SavedState = {
@@ -82,14 +64,7 @@ export const useSavedTimerStates = () => {
     
     // Add to local state
     setSavedStates(prev => [...prev, newSavedState]);
-    setCurrentID(newSavedState.id);
-    
-    // Also save to backend
-    try {
-      await timerService.saveTimerState(newSavedState);
-    } catch (error) {
-      console.error('Failed to save timer state to server:', error);
-    }
+    setCurrentID(newSavedState.id);    
   }
 
   const deleteSavedState = (id: string) => {
