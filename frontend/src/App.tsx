@@ -17,10 +17,8 @@ import { useScreenWakeLock } from './hooks/useScreenWakeLock';
 import { SavedState } from './types/timer';
 import Box from '@mui/material/Box';
 
-async function loadTimerFromURL(timerId: string, onLoadState: (state: SavedState) => void, setIsLoadingSharedTimer: (loading: boolean) => void) {  
+async function loadTimerFromURL(timerId: string, onLoadState: (state: SavedState) => void) {
   try {
-    setIsLoadingSharedTimer(true);
-
     const timerService = (await import('./services/timerService')).timerService;
     const state = await timerService.getTimerState(timerId);
     if (!state) {
@@ -30,9 +28,7 @@ async function loadTimerFromURL(timerId: string, onLoadState: (state: SavedState
     onLoadState(state);
   } catch (error) {
     console.error('Error loading timer from URL:', error);
-  } finally {
-    setIsLoadingSharedTimer(false);
-  }
+  };
 };
 
 
@@ -58,11 +54,19 @@ const CountdownTimer = () => {
   
 
   useEffect(() => {
-    setIsLoadingSharedTimer(true);
-    const params = new URLSearchParams(window.location.search);
-    const timerId = params.get('timer');
-    if (!timerId) return;
-    loadTimerFromURL(timerId, onLoadState, setIsLoadingSharedTimer);
+    const fetchTimer = async () => {
+      setIsLoadingSharedTimer(true);
+      const params = new URLSearchParams(window.location.search);
+      const timerId = params.get('timer');
+      if (!timerId) {
+        setIsLoadingSharedTimer(false)
+        return;
+      }
+      await loadTimerFromURL(timerId, onLoadState);
+      setIsLoadingSharedTimer(false)
+    };
+    
+    fetchTimer();
   }, []);
 
   // Create the current timer state object for sharing

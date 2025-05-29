@@ -19,7 +19,7 @@ A minimalistic timer application built with React and TypeScript, with a FastAPI
 ### Prerequisites
 
 - Node.js (v18+)
-- Python (v3.8+)
+- Python (v3.9+)
 - Docker
 
 ### Setting Up PostgreSQL
