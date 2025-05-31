@@ -18,4 +18,4 @@ export const TimerDisplay = ({ time, isPaused, fontSize, marginBottom, onClick }
         {`${time.hours}:${formatTimeUnit(time.minutes)}:${formatTimeUnit(time.seconds)}`}
     </div>
   );
-};
+};    

@@ -4,18 +4,20 @@ import { SavedState } from '../types/timer';
 import { formatDistance } from 'date-fns';
 import { calculateRemainingTime } from '../hooks/useTimer';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { SettingsBackupRestore } from '@mui/icons-material';
+import { SettingsBackupRestore, Share } from '@mui/icons-material';
 
 interface SavedTimerStatesProps {
   savedStates: SavedState[];
   onLoadState: (id: string) => void;
   onDeleteState: (id: string) => void;
+  onShareState: (state: SavedState) => void; // Added callback for sharing
 }
 
 export const SavedTimerStates: React.FC<SavedTimerStatesProps> = ({
   savedStates,
   onLoadState,
-  onDeleteState
+  onDeleteState,
+  onShareState
 }) => {
   const [currentTime, setCurrentTime] = useState<number>(Date.now());
 
@@ -45,13 +47,38 @@ export const SavedTimerStates: React.FC<SavedTimerStatesProps> = ({
                   disablePadding
                   secondaryAction={
                     <>
+                      <Tooltip title="Share Timer">
+                        <IconButton 
+                          size="small" 
+                          edge="end" 
+                          aria-label="share" 
+                          onClick={() => onShareState(state)} 
+                          color="primary" 
+                          sx={{ mr: 0.5 }}
+                        >
+                          <Share fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title="Restore Timer">
-                        <IconButton size="small" edge="end" aria-label="load" onClick={() => onLoadState(state.id)} color="primary" sx={{ mr: 0.5 }}>
+                        <IconButton 
+                          size="small" 
+                          edge="end" 
+                          aria-label="load" 
+                          onClick={() => onLoadState(state.id)} 
+                          color="primary" 
+                          sx={{ mr: 0.5 }}
+                        >
                           <SettingsBackupRestore fontSize="small" />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete Timer">
-                        <IconButton size="small" edge="end" aria-label="delete" onClick={() => onDeleteState(state.id)} color="error">
+                        <IconButton 
+                          size="small" 
+                          edge="end" 
+                          aria-label="delete" 
+                          onClick={() => onDeleteState(state.id)} 
+                          color="error"
+                        >
                           <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
