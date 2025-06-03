@@ -38,10 +38,12 @@ export const useSavedTimerStates = () => {
     localStorage.setItem('durerTimerSavedStates', JSON.stringify(savedStates));
   }, [savedStates]);
 
-  const updateSavedState = (newTimerState: TimerState, newAppSettings: AppSettings) => {
+  const updateSavedState = async (newTimerState: TimerState, newAppSettings: AppSettings) => {
     if (!currentID) {
       return;
     }
+    
+    // Update local state
     setSavedStates(prevSavedStates =>
       prevSavedStates.map(state =>
         state.id === currentID
@@ -49,9 +51,9 @@ export const useSavedTimerStates = () => {
           : state
       )
     );
-  };
+};
 
-  const addSavedState = (newTimerState: TimerState, newAppSettings: AppSettings, name: string = "") => {
+  const addSavedState = async (newTimerState: TimerState, newAppSettings: AppSettings, name: string = "") => {
     const newSavedState: SavedState = {
       id: crypto.randomUUID(),
       name: name,
@@ -59,8 +61,10 @@ export const useSavedTimerStates = () => {
       timerState: newTimerState,
       appSettings: newAppSettings,
     };
+    
+    // Add to local state
     setSavedStates(prev => [...prev, newSavedState]);
-    setCurrentID(newSavedState.id);
+    setCurrentID(newSavedState.id);    
   }
 
   const deleteSavedState = (id: string) => {
@@ -76,5 +80,6 @@ export const useSavedTimerStates = () => {
     deleteSavedState,
     addSavedState,
     setCurrentID,
+    currentID
   };
 };

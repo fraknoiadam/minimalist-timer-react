@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { TimerDisplay } from './components/TimerDisplay';
 import { SettingsMenu } from './components/SettingsMenu';
 import { TimerSetupForm } from './components/TimerSetupForm';
 import { ContentEmbed } from './components/ContentEmbed';
 import { SavedTimerStates } from './components/SavedTimerStates';
+import { TimerCodeInput } from './components/TimerCodeInput';
+import { ShareDialog } from './components/ShareDialog';
 import { useTimer } from './hooks/useTimer';
 import { useSavedTimerStates } from './hooks/useSavedTimerStates';
 import { ThemeProvider } from '@mui/material/styles';
@@ -12,16 +14,73 @@ import { lightTheme, darkTheme } from './theme';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useScreenWakeLock } from './hooks/useScreenWakeLock';
+import { SavedState } from './types/timer';
 import Box from '@mui/material/Box';
+
+async function loadTimerFromURL(timerId: string, onLoadState: (state: SavedState) => void) {
+  try {
+    const timerService = (await import('./services/timerService')).timerService;
+    const state = await timerService.getTimerState(timerId);
+    if (!state) {
+      console.error('No timer state found for ID:', timerId);
+      return;
+    }          
+    onLoadState(state);
+  } catch (error) {
+    console.error('Error loading timer from URL:', error);
+  };
+};
+
 
 const CountdownTimer = () => {
   const [showForm, setShowForm] = useState(true);
   const timerRef = useRef<HTMLDivElement>(null);
   const [timerHeight, setTimerHeight] = useState(0);
+  const [isLoadingSharedTimer, setIsLoadingSharedTimer] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [shareableTimerState, setShareableTimerState] = useState<SavedState | undefined>(undefined);
 
   const { time, paused, timerState, addSecondsToTimer, toggleTimer, setTimerState } = useTimer(90 * 60 * 1000);
   const { settings, setSettings, updateEmbedSettings } = useAppSettings();
-  const { savedStates, updateSavedState, deleteSavedState, addSavedState, setCurrentID } = useSavedTimerStates();
+  const { savedStates, updateSavedState, deleteSavedState, addSavedState, setCurrentID, currentID } = useSavedTimerStates();
+  
+
+  function onLoadState(state: SavedState) {
+    setTimerState(state.timerState);
+    setSettings(state.appSettings);
+    setCurrentID(state.id);
+    setShowForm(false);
+  }
+  
+
+  useEffect(() => {
+    const fetchTimer = async () => {
+      setIsLoadingSharedTimer(true);
+      const params = new URLSearchParams(window.location.search);
+      const timerId = params.get('timer');
+      if (!timerId) {
+        setIsLoadingSharedTimer(false)
+        return;
+      }
+      await loadTimerFromURL(timerId, onLoadState);
+      setIsLoadingSharedTimer(false)
+    };
+    
+    fetchTimer();
+  }, []);
+
+  // Create the current timer state object for sharing
+  const currentTimerState = useMemo<SavedState | undefined>(() => {
+    if (!currentID) return undefined;
+    
+    return {
+      id: currentID,
+      name: `Timer ${new Date().toLocaleString()}`,
+      savedAt: Date.now(),
+      timerState: timerState,
+      appSettings: settings
+    };
+  }, [currentID, timerState, settings]);
 
   const remainingSeconds = time.seconds + time.minutes * 60 + time.hours * 3600;
 
@@ -77,12 +136,23 @@ const CountdownTimer = () => {
   return (
     <ThemeProvider theme={settings.darkMode ? darkTheme : lightTheme}>
       <CssBaseline />
-      <div className={`h-screen w-screen ${showForm ? 'overflow-auto' : 'overflow-hidden'}`}>
-        <SettingsMenu
-          settings={settings}
-          setSettings={setSettings}
-          addSecondsToTimer={addSecondsToTimer}
-          isSetupMode={showForm}
+      {isLoadingSharedTimer ? (
+        <div className="h-screen w-screen flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl mb-4">Loading shared timer...</h2>
+          </div>
+        </div>
+      ) : (
+        <div className={`h-screen w-screen ${showForm ? 'overflow-auto' : 'overflow-hidden'}`}>
+          <SettingsMenu
+            settings={settings}
+            setSettings={setSettings}
+            addSecondsToTimer={addSecondsToTimer}
+            isSetupMode={showForm}
+            onShareClick={!showForm && currentTimerState ? () => {
+              setShareableTimerState(currentTimerState);
+              setIsShareDialogOpen(true);
+            } : undefined}
         />
 
         <div ref={timerRef}>
@@ -117,6 +187,10 @@ const CountdownTimer = () => {
                     setShowForm(false);
                   }}
                   onDeleteState={deleteSavedState}
+                  onShareState={(state) => {
+                    setShareableTimerState(state);
+                    setIsShareDialogOpen(true);
+                  }}
                 />
               </Box>
               <Box
@@ -131,6 +205,18 @@ const CountdownTimer = () => {
                   mx: 'auto'
                 }}
               >
+                <Box sx={{ mb: 2 }}>
+                  <TimerCodeInput 
+                    onLoadState={(state) => {
+                      setTimerState(state.timerState);
+                      setSettings(state.appSettings);
+                      if (state.id) {
+                        setCurrentID(state.id);
+                      }
+                      setShowForm(false);
+                    }} 
+                  />
+                </Box>
                 <TimerSetupForm onStart={processSetupFormSubmission} />
               </Box>
             </Box>
@@ -145,6 +231,19 @@ const CountdownTimer = () => {
           />
         }
       </div>
+      )}
+      
+      {/* Share Dialog - outside of conditional rendering to avoid unmounting when editing */}
+      {shareableTimerState && (
+        <ShareDialog
+          open={isShareDialogOpen}
+          onClose={() => {
+            setIsShareDialogOpen(false);
+            setShareableTimerState(undefined);
+          }}
+          currentTimerState={shareableTimerState}
+        />
+      )}
     </ThemeProvider>
   );
 };

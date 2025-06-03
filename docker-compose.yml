@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_URI=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres/${POSTGRES_DB:-durer_timer}
+      - ALLOW_ORIGINS=${ALLOW_ORIGINS:-https://your-domain.com,http://localhost}
+      - SECRET_KEY=${SECRET_KEY:-production-secret-key-change-me}
+      - API_DEBUG=False
+    networks:
+      - durer-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-/api}
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    volumes:
+      - ./nginx/conf:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+    networks:
+      - durer-network
+
+networks:
+  durer-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

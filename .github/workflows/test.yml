@@ -2,9 +2,9 @@ name: Run Tests
 
 on:
   push:
-    branches: main
+    branches: [ main ]
   pull_request:
-    branches: main
+    branches: [ main ]
 
 jobs:
   test:
@@ -16,15 +16,32 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Cache node modules
+      uses: actions/cache@v3
+      id: cache-nodemodules
+      with:
+        path: frontend/node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
 
     - name: Install dependencies
+      working-directory: ./frontend
+      if: steps.cache-nodemodules.outputs.cache-hit != 'true'
       run: npm ci
 
+    - name: Run tests
+      working-directory: ./frontend
+      run: npm run test
+
     - name: Run linting
+      working-directory: ./frontend
       run: npm run lint
