@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Box, Button, TextField } from '@mui/material';
+import { useS3Links } from '../hooks/useS3Links';
 
 interface TimerSetupFormProps {
   onStart: (
@@ -14,6 +15,7 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
   const [links, setLinks] = useState(['']);
   const [linkSwitchDurationSec, setLinkSwitchDurationSec] = useState(15);
   const [embedFadeOutMin, setEmbedFadeOutMin] = useState(10);
+  const { linksData } = useS3Links();
 
 
   const addLink = () => {
@@ -22,6 +24,10 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
 
   const updateLink = (index: number, value: string) => {
     setLinks(prev => prev.map((link, i) => i === index ? value : link));
+  };
+
+  const handleS3ButtonClick = (url: string) => {
+    setLinks([url]);
   };
 
   const handleStart = () => {
@@ -40,6 +46,24 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
             <li>There is a settings button in the top left corner.</li>
             <li>You can start the timer by clicking on it.</li>
         </ul>
+
+        {linksData && Object.keys(linksData).length > 0 && (
+          <Box sx={{ mb: 4 }}>
+            <h3 className="text-lg font-bold mb-3">Quick Links</h3>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {Object.entries(linksData).map(([key, url]) => (
+                <Button
+                  key={key}
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleS3ButtonClick(url)}
+                >
+                  {key}
+                </Button>
+              ))}
+            </Box>
+          </Box>
+        )}
 
         <div className="space-y-4">
           {links.map((link, index) => (
