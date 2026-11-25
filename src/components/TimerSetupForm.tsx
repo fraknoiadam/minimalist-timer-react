@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Box, Button, TextField } from '@mui/material';
-import { useS3Links } from '../hooks/useS3Links';
+import { useQuickLinks } from '../hooks/useQuickLinks';
+import {
+  getAppSettingsOverrides,
+  QuickLinkAppSettings,
+  QuickLinkPreset,
+} from '../quickLinksConfig';
 
 interface TimerSetupFormProps {
   onStart: (
@@ -9,13 +14,14 @@ interface TimerSetupFormProps {
     animationPauseTime: number,
     embedFadeOutSec: number,
   ) => void;
+  onApplyAppSettings: (overrides: QuickLinkAppSettings) => void;
 }
 
-export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
+export const TimerSetupForm = ({ onStart, onApplyAppSettings }: TimerSetupFormProps) => {
   const [links, setLinks] = useState(['']);
   const [linkSwitchDurationSec, setLinkSwitchDurationSec] = useState(15);
   const [embedFadeOutMin, setEmbedFadeOutMin] = useState(10);
-  const { linksData } = useS3Links();
+  const { presets } = useQuickLinks();
 
 
   const addLink = () => {
@@ -26,8 +32,14 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
     setLinks(prev => prev.map((link, i) => i === index ? value : link));
   };
 
-  const handleS3ButtonClick = (url: string) => {
-    setLinks([url]);
+  // Fields the preset does not set (neither itself nor via defaults) keep their current value.
+  const handlePresetClick = ({ settings }: QuickLinkPreset) => {
+    if (settings.links) setLinks(settings.links);
+    if (settings.linkSwitchDurationSec !== undefined) setLinkSwitchDurationSec(settings.linkSwitchDurationSec);
+    if (settings.embedFadeOutMin !== undefined) setEmbedFadeOutMin(settings.embedFadeOutMin);
+
+    const appSettings = getAppSettingsOverrides(settings);
+    if (Object.keys(appSettings).length > 0) onApplyAppSettings(appSettings);
   };
 
   const handleStart = () => {
@@ -47,18 +59,18 @@ export const TimerSetupForm = ({ onStart }: TimerSetupFormProps) => {
             <li>You can start the timer by clicking on it.</li>
         </ul>
 
-        {linksData && Object.keys(linksData).length > 0 && (
+        {presets.length > 0 && (
           <Box sx={{ mb: 4 }}>
             <h3 className="text-lg font-bold mb-3">Quick Links</h3>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {Object.entries(linksData).map(([key, url]) => (
+              {presets.map((preset, index) => (
                 <Button
-                  key={key}
+                  key={index}
                   variant="outlined"
                   size="small"
-                  onClick={() => handleS3ButtonClick(url)}
+                  onClick={() => handlePresetClick(preset)}
                 >
-                  {key}
+                  {preset.name}
                 </Button>
               ))}
             </Box>
