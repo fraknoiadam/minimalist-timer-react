@@ -131,7 +131,10 @@ const CountdownTimer = () => {
                   mx: 'auto'
                 }}
               >
-                <TimerSetupForm onStart={processSetupFormSubmission} />
+                <TimerSetupForm
+                  onStart={processSetupFormSubmission}
+                  onApplyAppSettings={(overrides) => setSettings(prev => ({ ...prev, ...overrides }))}
+                />
               </Box>
             </Box>
           </Box>
